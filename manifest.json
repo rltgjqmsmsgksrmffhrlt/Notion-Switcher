@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Notion Workspace Switcher",
+  "version": "3.0.0",
+  "description": "Notion 워크스페이스를 빠르게 전환하세요",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Notion Switcher (Alt+N)"
+  },
+  "permissions": ["storage", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "windows": "Alt+N",
+        "mac": "Alt+N",
+        "linux": "Alt+N"
+      },
+      "description": "Notion Switcher 팝업 열기"
+    },
+    "open-dashboard": {
+      "suggested_key": {
+        "windows": "Alt+Shift+N",
+        "mac": "Alt+Shift+N",
+        "linux": "Alt+Shift+N"
+      },
+      "description": "Notion 대시보드 열기"
+    }
+  }
+}

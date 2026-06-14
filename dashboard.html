@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Notion Switcher</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #191919;
+  --surface: #222;
+  --surface-hover: #2a2a2a;
+  --border: #2a2a2a;
+  --border-hover: #3a3a3a;
+  --text: #d4d4d4;
+  --text-bright: #e8e8e8;
+  --text-dim: #666;
+  --text-faint: #444;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 32px 80px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo {
+  width: 36px;
+  height: 36px;
+  background: #2a2a2a;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #888;
+}
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+.ws-total {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin-left: 4px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.search-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: #555; }
+.search-input::placeholder { color: var(--text-faint); }
+
+.btn-primary {
+  padding: 12px 22px;
+  background: #333;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.btn-primary:hover { background: #3d3d3d; border-color: #4a4a4a; }
+
+.btn-secondary {
+  padding: 12px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-hover); color: var(--text); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 20px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.card.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+.card-badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: #2d2d2d;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #555;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+.card:hover .card-badge { background: #383838; color: #888; }
+
+.card-actions {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.card:hover .card-actions { opacity: 1; }
+.card-action-btn {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #555;
+  transition: all 0.12s;
+}
+.card-action-btn.edit:hover { background: #1f3a4a; color: #70aaff; }
+.card-action-btn.del:hover { background: #4a1f1f; color: #ff7070; }
+
+.card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+.card-icon .emoji { font-size: 24px; }
+.card-icon .initial { font-size: 18px; color: #d0d0d0; }
+
+.card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.card-url {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: auto;
+}
+
+.card-add {
+  background: transparent;
+  border: 2px dashed #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  gap: 8px;
+  min-height: 130px;
+  transition: all 0.15s;
+}
+.card-add:hover {
+  border-color: #444;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.02);
+  transform: none;
+  box-shadow: none;
+}
+.card-add-icon { font-size: 28px; line-height: 1; }
+.card-add-text { font-size: 13px; }
+
+/* Folder */
+.folder-section {
+  margin-bottom: 28px;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+.folder-section.drag-over {
+  background: rgba(74, 158, 255, 0.04);
+  padding: 4px;
+}
+.folder-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  margin-bottom: 12px;
+}
+.folder-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.folder-count {
+  font-size: 12px;
+  color: var(--text-faint);
+  background: var(--surface);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.folder-actions {
+  display: none;
+  gap: 4px;
+  margin-left: auto;
+}
+.folder-header:hover .folder-actions { display: flex; }
+.folder-btn {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  transition: all 0.12s;
+}
+.folder-btn:hover { background: var(--surface-hover); color: var(--text); }
+.folder-btn.del:hover { background: #4a1f1f; color: #ff7070; }
+
+.folder-empty {
+  grid-column: 1 / -1;
+  padding: 28px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 13px;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-title { font-size: 17px; color: var(--text-dim); margin-bottom: 8px; }
+.empty-desc { font-size: 13px; color: var(--text-faint); line-height: 1.6; }
+
+/* Footer */
+.footer {
+  margin-top: 48px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 12px;
+  line-height: 2;
+}
+.footer kbd {
+  display: inline-block;
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 28px;
+  width: 400px;
+  max-width: 90vw;
+}
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 20px;
+}
+.modal-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.modal-input {
+  flex: 1;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.modal-input:focus { border-color: #555; }
+.modal-input::placeholder { color: var(--text-faint); }
+.modal-input.emoji { width: 64px; flex: none; text-align: center; font-size: 18px; }
+.modal-input.error { border-color: #7a3535; }
+
+.modal-select {
+  flex: 1;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  cursor: pointer;
+}
+.modal-select:focus { border-color: #555; }
+.modal-select option { background: #1e1e1e; color: var(--text); }
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+.modal-btn {
+  padding: 9px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.modal-btn-cancel {
+  background: transparent;
+  color: var(--text-dim);
+}
+.modal-btn-cancel:hover { color: var(--text); }
+.modal-btn-save {
+  background: #444;
+  color: var(--text-bright);
+}
+.modal-btn-save:hover { background: #555; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">N</div>
+      <h1 class="title">Notion Switcher</h1>
+      <span class="ws-total" id="ws-total"></span>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <input class="search-input" id="search" type="text"
+           placeholder="워크스페이스 검색... (숫자 1~9로 바로 이동)"
+           autocomplete="off" spellcheck="false" autofocus>
+    <button class="btn-secondary" id="btn-add-folder">📁 폴더</button>
+    <button class="btn-primary" id="btn-add">＋ 추가</button>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="footer">
+    <kbd>1</kbd>~<kbd>9</kbd> 바로 이동 &nbsp;&middot;&nbsp;
+    <kbd>Enter</kbd> 첫 번째 결과 &nbsp;&middot;&nbsp;
+    <kbd>/</kbd> 검색 포커스 &nbsp;&middot;&nbsp;
+    <kbd>Alt+N</kbd> 팝업 &nbsp;&middot;&nbsp;
+    <kbd>Alt+Shift+N</kbd> 이 페이지
+  </div>
+</div>
+
+<!-- Workspace Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">워크스페이스 추가</div>
+    <div class="modal-row">
+      <input class="modal-input emoji" id="m-emoji" type="text" placeholder="🏢" maxlength="2">
+      <input class="modal-input" id="m-name" type="text" placeholder="워크스페이스 이름">
+    </div>
+    <div class="modal-row">
+      <input class="modal-input" id="m-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+    </div>
+    <div class="modal-row">
+      <select class="modal-select" id="m-folder">
+        <option value="">📋 미분류</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
+      <button class="modal-btn modal-btn-save" id="m-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Folder Modal -->
+<div class="modal-overlay" id="folder-modal">
+  <div class="modal">
+    <div class="modal-title" id="folder-modal-title">폴더 추가</div>
+    <div class="modal-row">
+      <input class="modal-input emoji" id="fm-emoji" type="text" placeholder="📁" maxlength="2">
+      <input class="modal-input" id="fm-name" type="text" placeholder="폴더 이름">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="fm-cancel">취소</button>
+      <button class="modal-btn modal-btn-save" id="fm-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

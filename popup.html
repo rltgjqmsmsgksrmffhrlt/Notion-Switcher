@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 13px;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  user-select: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px 10px;
+  border-bottom: 1px solid #2c2c2c;
+}
+.header-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #666;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-count {
+  font-size: 11px;
+  color: #444;
+}
+.btn-dashboard {
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 5px;
+  padding: 3px 8px;
+  color: #888;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.btn-dashboard:hover { background: #333; color: #bbb; border-color: #444; }
+
+.search-wrap { padding: 8px 8px 6px; }
+.search-input {
+  width: 100%;
+  background: #282828;
+  border: 1px solid #333;
+  border-radius: 7px;
+  padding: 7px 11px;
+  color: #d0d0d0;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: #4a4a4a; }
+.search-input::placeholder { color: #444; }
+
+.workspace-list {
+  overflow-y: auto;
+  max-height: 340px;
+  padding: 3px 0;
+}
+.workspace-list::-webkit-scrollbar { width: 4px; }
+.workspace-list::-webkit-scrollbar-track { background: transparent; }
+.workspace-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+.folder-label {
+  padding: 8px 14px 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.03em;
+}
+
+.workspace-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 10px;
+  margin: 1px 5px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+.workspace-item:hover { background: #2a2a2a; }
+.workspace-item.active-ws { background: #252525; }
+.workspace-item.kbd-focus { background: #2d2d2d; outline: 1px solid #444; }
+
+.ws-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #555;
+  flex-shrink: 0;
+}
+.workspace-item:hover .ws-badge { background: #353535; color: #888; }
+
+.ws-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: #d0d0d0;
+}
+
+.ws-info { flex: 1; overflow: hidden; }
+.ws-name {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #d0d0d0;
+}
+.ws-url {
+  font-size: 10px;
+  color: #484848;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.ws-actions { display: none; gap: 2px; flex-shrink: 0; }
+.workspace-item:hover .ws-actions { display: flex; }
+
+.btn-sm {
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #666;
+  transition: background 0.1s, color 0.1s;
+}
+.btn-sm:hover { background: #353535; color: #bbb; }
+.btn-sm.edit:hover { background: #1f3a4a; color: #70aaff; }
+.btn-sm.del:hover { background: #4a1f1f; color: #ff7070; }
+
+.empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: #444;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.empty-sub { font-size: 11px; color: #383838; margin-top: 4px; }
+
+.add-form {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 9px;
+  border-top: 1px solid #272727;
+  background: #1a1a1a;
+}
+.add-form.open { display: flex; }
+.form-row { display: flex; gap: 5px; }
+.form-input {
+  flex: 1;
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 9px;
+  color: #d0d0d0;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input.emoji { width: 54px; flex: none; text-align: center; }
+.form-input:focus { border-color: #4a4a4a; }
+.form-input::placeholder { color: #3d3d3d; }
+.form-input.error { border-color: #7a3535 !important; }
+
+.form-select {
+  flex: 1;
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 9px;
+  color: #d0d0d0;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+.form-select:focus { border-color: #4a4a4a; }
+.form-select option { background: #252525; color: #d0d0d0; }
+
+.form-btns { display: flex; gap: 5px; justify-content: flex-end; margin-top: 2px; }
+.btn-save {
+  padding: 5px 13px;
+  background: #333;
+  border: none;
+  border-radius: 6px;
+  color: #d0d0d0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.btn-save:hover { background: #3d3d3d; }
+.btn-cancel-form {
+  padding: 5px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #555;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-cancel-form:hover { color: #888; }
+
+.footer { border-top: 1px solid #272727; padding: 5px; }
+.btn-add {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.1s, color 0.1s;
+  text-align: left;
+}
+.btn-add:hover { background: #272727; color: #aaa; }
+.btn-add-icon { font-size: 16px; line-height: 1; }
+
+.kbd-hint {
+  font-size: 10px;
+  color: #333;
+  padding: 4px 14px 5px;
+  border-top: 1px solid #272727;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-title">Notion Switcher</span>
+  <div class="header-right">
+    <span class="header-count" id="ws-count"></span>
+    <button class="btn-dashboard" id="btn-dashboard" title="Alt+Shift+N">대시보드 ↗</button>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <input class="search-input" id="search" type="text" placeholder="검색 또는 숫자(1~9)로 바로 이동" autocomplete="off" spellcheck="false">
+</div>
+
+<div class="workspace-list" id="ws-list"></div>
+
+<div class="add-form" id="add-form">
+  <div class="form-row">
+    <input class="form-input emoji" id="f-emoji" type="text" placeholder="🏢" maxlength="2">
+    <input class="form-input" id="f-name" type="text" placeholder="워크스페이스 이름">
+  </div>
+  <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+  <div class="form-row">
+    <select class="form-select" id="f-folder">
+      <option value="">📋 미분류</option>
+    </select>
+  </div>
+  <div class="form-row" id="new-folder-row" style="display:none">
+    <input class="form-input" id="f-folder-emoji" type="text" placeholder="📁" maxlength="2" style="width:40px;flex:none;text-align:center">
+    <input class="form-input" id="f-folder-name" type="text" placeholder="새 폴더 이름">
+    <button class="btn-save" id="btn-folder-create" style="padding:6px 8px;flex:none">추가</button>
+  </div>
+  <div class="form-btns">
+    <button class="btn-cancel-form" id="btn-cancel">취소</button>
+    <button class="btn-save" id="btn-save">저장</button>
+  </div>
+</div>
+
+<div class="footer">
+  <button class="btn-add" id="btn-add">
+    <span class="btn-add-icon">＋</span>
+    <span>워크스페이스 추가</span>
+  </button>
+</div>
+
+<div class="kbd-hint">숫자 1~9: 바로 이동 · Enter: 첫 번째 결과 · Shift+클릭: 새 탭</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
