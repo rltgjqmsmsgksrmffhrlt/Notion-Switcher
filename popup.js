@@ -65,25 +65,8 @@ async function createNewFolder() {
   document.getElementById('f-folder-emoji').value = '';
 }
 
-async function smartOpen(url, forceNew) {
-  if (forceNew) {
-    chrome.tabs.create({ url: url });
-    window.close();
-    return;
-  }
-  try {
-    var base = url.split('?')[0].replace(/\/$/, '');
-    var all = await chrome.tabs.query({ url: ['https://www.notion.so/*', 'https://notion.so/*'] });
-    var match = all.find(function (t) { return t.url && t.url.split('?')[0].replace(/\/$/, '').startsWith(base); });
-    if (match) {
-      await chrome.tabs.update(match.id, { active: true });
-      await chrome.windows.update(match.windowId, { focused: true });
-      window.close();
-      return;
-    }
-  } catch (e) {}
-  var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  chrome.tabs.update(tabs[0].id, { url: url });
+function smartOpen(url) {
+  chrome.tabs.create({ url: url });
   window.close();
 }
 
@@ -296,14 +279,14 @@ async function onItemClick(e) {
   if (btn) {
     e.stopPropagation();
     var action = btn.dataset.action;
-    if (action === 'newtab') await smartOpen(btn.dataset.url, true);
+    if (action === 'newtab') smartOpen(btn.dataset.url);
     else if (action === 'delete') await deleteWs(btn.dataset.id);
     else if (action === 'edit') startEdit(btn.dataset.id);
     else if (action === 'add') openAddForm(btn.dataset.folder || null);
     return;
   }
   var url = e.currentTarget.dataset.url;
-  await smartOpen(url, e.shiftKey || e.ctrlKey);
+  smartOpen(url);
 }
 
 function startEdit(id) {
@@ -335,13 +318,13 @@ function onSearchKey(e) {
     var idx = parseInt(e.key) - 1;
     if (idx < displayOrder.length) {
       e.preventDefault();
-      smartOpen(displayOrder[idx].url, e.shiftKey);
+      smartOpen(displayOrder[idx].url);
     }
     return;
   }
 
   if (e.key === 'Enter' && displayOrder.length > 0) {
-    smartOpen(displayOrder[0].url, e.shiftKey);
+    smartOpen(displayOrder[0].url);
   }
   if (e.key === 'Escape') {
     var q = document.getElementById('search').value;

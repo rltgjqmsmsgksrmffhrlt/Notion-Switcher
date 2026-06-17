@@ -5,7 +5,7 @@
 <title>Notion Switcher</title>
 <link rel="stylesheet" href="styles/tokens.css">
 <link rel="stylesheet" href="styles/components.css">
-<script>(function(){try{if(localStorage.getItem('ns_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<script src="theme-init.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -99,6 +99,7 @@ body {
   white-space: nowrap;
 }
 .btn-secondary:hover { background: var(--hover); border-color: var(--line-2); color: var(--ink); }
+.btn-secondary .ico { width: 16px; height: 16px; display: block; }
 
 /* ── Grid ── */
 .grid {
@@ -247,6 +248,18 @@ body {
 }
 .folder-btn:hover { background: var(--hover-2); color: var(--ink); }
 .folder-btn.del:hover { background: var(--danger-soft); color: var(--danger); }
+
+.folder-drag-handle {
+  display: none; width: 20px; height: 20px;
+  align-items: center; justify-content: center;
+  color: var(--ink-4); font-size: 12px; letter-spacing: -1px;
+  cursor: grab; border-radius: var(--r-xs);
+}
+.folder-drag-handle:hover { background: var(--hover-2); color: var(--ink-2); }
+.folder-drag-handle:active { cursor: grabbing; }
+.folder-header:hover .folder-drag-handle { display: flex; }
+.folder-section.folder-drop-above { border-top: 2px solid var(--accent); }
+.folder-section.folder-drop-below { border-bottom: 2px solid var(--accent); }
 
 .folder-empty {
   grid-column: 1 / -1;

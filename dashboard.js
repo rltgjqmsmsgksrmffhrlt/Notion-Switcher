@@ -43,6 +43,7 @@ var filtered = [];
 var displayOrder = [];
 var editingWsId = null;
 var editingFolderId = null;
+var draggingFolderId = null;
 
 async function init() {
   var results = await Promise.all([loadWorkspaces(), loadFolders()]);
@@ -196,7 +197,8 @@ function renderCard(ws, idx) {
 
 function renderFolderSection(folder, items, startIdx) {
   var html = '<div class="folder-section" data-folder-id="' + esc(folder.id) + '">' +
-    '<div class="folder-header">' +
+    '<div class="folder-header" draggable="true" data-folder-drag-id="' + esc(folder.id) + '">' +
+      '<div class="folder-drag-handle" title="드래그하여 순서 변경">⠿</div>' +
       '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '📁') + '</span>' + esc(folder.name) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
       '<div class="folder-actions">' +
@@ -264,6 +266,7 @@ function bindCardEvents() {
 function bindDragDrop() {
   var cards = document.querySelectorAll('.card[draggable="true"]');
   var sections = document.querySelectorAll('.folder-section');
+  var folderHeaders = document.querySelectorAll('.folder-header[data-folder-drag-id]');
 
   cards.forEach(function (card) {
     card.addEventListener('dragstart', function (e) {
@@ -277,6 +280,7 @@ function bindDragDrop() {
       clearCardMarks();
     });
     card.addEventListener('dragover', function (e) {
+      if (draggingFolderId) return;
       var dragging = document.querySelector('.card.dragging');
       if (!dragging || dragging === card) return;
       e.preventDefault();
@@ -288,6 +292,7 @@ function bindDragDrop() {
       card.classList.add(after ? 'drop-right' : 'drop-left');
     });
     card.addEventListener('drop', function (e) {
+      if (draggingFolderId) return;
       var draggedId = e.dataTransfer.getData('text/plain');
       if (!draggedId || draggedId === card.dataset.id) return;
       e.preventDefault();
@@ -299,25 +304,77 @@ function bindDragDrop() {
     });
   });
 
+  folderHeaders.forEach(function (header) {
+    header.addEventListener('dragstart', function (e) {
+      draggingFolderId = header.dataset.folderDragId;
+      header.closest('.folder-section').classList.add('dragging');
+      e.dataTransfer.setData('application/folder-id', draggingFolderId);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    header.addEventListener('dragend', function () {
+      draggingFolderId = null;
+      document.querySelectorAll('.folder-section.dragging').forEach(function (s) { s.classList.remove('dragging'); });
+      clearFolderMarks();
+    });
+  });
+
   sections.forEach(function (section) {
     section.addEventListener('dragover', function (e) {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      section.classList.add('drag-over');
+      if (draggingFolderId) {
+        var targetId = section.dataset.folderId;
+        if (!targetId || targetId === draggingFolderId) return;
+        e.dataTransfer.dropEffect = 'move';
+        clearFolderMarks();
+        var r = section.getBoundingClientRect();
+        var below = e.clientY > r.top + r.height / 2;
+        section.classList.add(below ? 'folder-drop-below' : 'folder-drop-above');
+      } else {
+        e.dataTransfer.dropEffect = 'move';
+        section.classList.add('drag-over');
+      }
     });
     section.addEventListener('dragleave', function (e) {
       if (!section.contains(e.relatedTarget)) {
-        section.classList.remove('drag-over');
+        section.classList.remove('drag-over', 'folder-drop-above', 'folder-drop-below');
       }
     });
     section.addEventListener('drop', function (e) {
       e.preventDefault();
       section.classList.remove('drag-over');
-      var wsId = e.dataTransfer.getData('text/plain');
-      var folderId = section.dataset.folderId;
-      moveToFolder(wsId, folderId || null);
+      if (draggingFolderId) {
+        clearFolderMarks();
+        var targetId = section.dataset.folderId;
+        if (targetId && targetId !== draggingFolderId) {
+          var r = section.getBoundingClientRect();
+          var below = e.clientY > r.top + r.height / 2;
+          reorderFolder(draggingFolderId, targetId, below);
+        }
+      } else {
+        var wsId = e.dataTransfer.getData('text/plain');
+        var folderId = section.dataset.folderId;
+        moveToFolder(wsId, folderId || null);
+      }
     });
   });
+}
+
+function clearFolderMarks() {
+  document.querySelectorAll('.folder-drop-above,.folder-drop-below').forEach(function (el) {
+    el.classList.remove('folder-drop-above', 'folder-drop-below');
+  });
+}
+
+async function reorderFolder(draggedId, targetId, placeBelow) {
+  if (draggedId === targetId) return;
+  var dragged = folders.find(function (f) { return f.id === draggedId; });
+  if (!dragged) return;
+  folders = folders.filter(function (f) { return f.id !== draggedId; });
+  var ti = folders.findIndex(function (f) { return f.id === targetId; });
+  if (ti < 0) ti = folders.length - 1;
+  folders.splice(ti + (placeBelow ? 1 : 0), 0, dragged);
+  await saveFolders(folders);
+  applyFilter();
 }
 
 async function moveToFolder(wsId, folderId) {

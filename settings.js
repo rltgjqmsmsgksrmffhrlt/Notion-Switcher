@@ -105,12 +105,9 @@ window.Settings = (function () {
 
     var rows = DEFS.map(function (d) {
       var combo = get(d.id);
-      var right;
-      if (d.scope === 'global') {
-        right = '<button class="sc-link" data-chrome="1">Chrome ↗</button>';
-      } else {
-        right = '<button class="sc-edit" data-edit="' + d.id + '">변경</button>';
-      }
+      var right = d.scope === 'page'
+        ? '<button class="sc-edit" data-edit="' + d.id + '">변경</button>'
+        : '';
       var scopeBadge = d.scope === 'global'
         ? '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--field);color:var(--ink-3);flex-shrink:0">전역</span>'
         : '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--accent-soft);color:var(--accent);flex-shrink:0">앱 내</span>';
@@ -137,8 +134,10 @@ window.Settings = (function () {
       '</div>' +
       '<div class="set-section">' +
         '<div class="set-h">단축키</div>' + rows +
-        '<div class="sc-note">전역 단축키는 브라우저가 관리해요. 다른 프로그램과 겹치면 ' +
-        '<b>Chrome에서 변경</b>으로 <span class="mono">chrome://extensions/shortcuts</span>에서 바꿀 수 있어요.</div>' +
+      '</div>' +
+      '<div class="set-section set-bottom">' +
+        '<button class="sc-chrome-btn" data-chrome="1">Chrome 단축키 설정 열기 ↗</button>' +
+        '<div class="sc-note">전역 단축키(팝업·대시보드 열기)는 브라우저가 관리해요. 다른 프로그램과 겹치면 위 버튼으로 변경할 수 있어요.</div>' +
       '</div>';
   }
 
