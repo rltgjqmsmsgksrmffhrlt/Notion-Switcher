@@ -1,16 +1,5 @@
 'use strict';
 
-var COLORS = [
-  '#3d3d5c', '#3d4f3d', '#4f3d3d', '#3d4a4f',
-  '#4a3d4f', '#4f4a3d', '#3d453f', '#45383d',
-];
-
-function hashColor(str) {
-  var h = 0;
-  for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
-  return COLORS[Math.abs(h) % COLORS.length];
-}
-
 function getInitial(name) {
   if (!name) return '?';
   var first = Array.from(name)[0];
@@ -29,8 +18,9 @@ function esc(str) {
 function shortUrl(url) {
   try {
     var u = new URL(url);
-    return u.hostname + u.pathname.slice(0, 28) + (u.pathname.length > 28 ? '…' : '');
-  } catch (e) { return url.slice(0, 36); }
+    var path = u.pathname.replace(/\/$/, '');
+    return (u.hostname.replace(/^www\./, '')) + path.slice(0, 26) + (path.length > 26 ? '…' : '');
+  } catch (e) { return url.slice(0, 34); }
 }
 
 async function loadWorkspaces() {
@@ -103,8 +93,10 @@ var filtered = [];
 var displayOrder = [];
 var currentTabUrl = '';
 var editingId = null;
+var dragId = null;
 
 async function init() {
+  Theme.init();
   var results = await Promise.all([loadWorkspaces(), loadFolders()]);
   workspaces = results[0];
   folders = results[1];
@@ -124,6 +116,8 @@ async function init() {
   search.addEventListener('keydown', onSearchKey);
 
   document.getElementById('btn-dashboard').addEventListener('click', openDashboard);
+  Settings.mount(document.getElementById('btn-theme'));
+  CustomSelect.enhance(document.getElementById('f-folder'));
 }
 
 function openDashboard() {
@@ -137,25 +131,32 @@ function updateCount() {
 }
 
 function renderItem(ws, idx) {
-  var color = hashColor(ws.name);
+  var tile = tileFor(ws);
   var icon = ws.emoji
-    ? '<span style="font-size:16px">' + esc(ws.emoji) + '</span>'
-    : '<span style="font-size:12px;font-weight:700">' + esc(getInitial(ws.name)) + '</span>';
+    ? '<span>' + esc(ws.emoji) + '</span>'
+    : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
   var isActive = currentTabUrl && ws.url && currentTabUrl.startsWith(ws.url.split('?')[0]);
   var badge = idx < 9 ? '<div class="ws-badge">' + (idx + 1) + '</div>' : '';
 
   return '<div class="workspace-item' + (isActive ? ' active-ws' : '') + '"' +
-    ' data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-idx="' + idx + '">' +
-    badge +
-    '<div class="ws-icon" style="background:' + color + '">' + icon + '</div>' +
+    ' data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-idx="' + idx + '"' +
+    ' data-folder="' + esc(ws.folderId || '') + '">' +
+    '<div class="ws-gutter">' +
+      '<button class="g-btn g-add" data-action="add" data-folder="' + esc(ws.folderId || '') + '" title="여기에 추가" tabindex="-1">＋</button>' +
+      '<span class="g-btn g-handle" draggable="true" title="드래그하여 정렬" tabindex="-1">⠿</span>' +
+    '</div>' +
+    '<div class="ws-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
     '<div class="ws-info">' +
       '<div class="ws-name">' + esc(ws.name) + '</div>' +
       '<div class="ws-url">' + esc(shortUrl(ws.url)) + '</div>' +
     '</div>' +
-    '<div class="ws-actions">' +
-      '<button class="btn-sm edit" data-action="edit" data-id="' + esc(ws.id) + '" title="편집">✎</button>' +
-      '<button class="btn-sm" data-action="newtab" data-url="' + esc(ws.url) + '" title="새 탭">↗</button>' +
-      '<button class="btn-sm del" data-action="delete" data-id="' + esc(ws.id) + '" title="삭제">✕</button>' +
+    '<div class="ws-meta">' +
+      '<div class="ws-actions">' +
+        '<button class="btn-sm edit" data-action="edit" data-id="' + esc(ws.id) + '" title="편집" tabindex="-1">✎</button>' +
+        '<button class="btn-sm" data-action="newtab" data-url="' + esc(ws.url) + '" title="새 탭" tabindex="-1">↗</button>' +
+        '<button class="btn-sm del" data-action="delete" data-id="' + esc(ws.id) + '" title="삭제" tabindex="-1">✕</button>' +
+      '</div>' +
+      badge +
     '</div>' +
   '</div>';
 }
@@ -203,7 +204,7 @@ function renderList() {
       folders.forEach(function (folder) {
         var items = grouped[folder.id] || [];
         if (items.length === 0) return;
-        html += '<div class="folder-label">' + (folder.emoji || '📁') + ' ' + esc(folder.name) + '</div>';
+        html += '<div class="folder-label"><span class="fl-emoji">' + (folder.emoji || '📁') + '</span>' + esc(folder.name) + '</div>';
         items.forEach(function (ws) {
           displayOrder.push(ws);
           html += renderItem(ws, idx);
@@ -212,7 +213,7 @@ function renderList() {
       });
 
       if (unfiled.length > 0) {
-        html += '<div class="folder-label">📋 미분류</div>';
+        html += '<div class="folder-label"><span class="fl-emoji">📋</span>미분류</div>';
         unfiled.forEach(function (ws) {
           displayOrder.push(ws);
           html += renderItem(ws, idx);
@@ -227,15 +228,78 @@ function renderList() {
   list.querySelectorAll('.workspace-item').forEach(function (el) {
     el.addEventListener('click', onItemClick);
   });
+  if (!isSearching) bindDrag(list);
+}
+
+// ── Drag to reorder ──
+function bindDrag(list) {
+  list.querySelectorAll('.g-handle').forEach(function (handle) {
+    var item = handle.closest('.workspace-item');
+    handle.addEventListener('dragstart', function (e) {
+      dragId = item.dataset.id;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', dragId); } catch (err) {}
+      try { e.dataTransfer.setDragImage(item, 20, 18); } catch (err) {}
+    });
+    handle.addEventListener('dragend', function () {
+      item.classList.remove('dragging');
+      clearDropMarks(list);
+      dragId = null;
+    });
+  });
+
+  list.querySelectorAll('.workspace-item').forEach(function (item) {
+    item.addEventListener('dragover', function (e) {
+      if (!dragId || item.dataset.id === dragId) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      var r = item.getBoundingClientRect();
+      var below = e.clientY > r.top + r.height / 2;
+      clearDropMarks(list);
+      item.classList.add(below ? 'drop-below' : 'drop-above');
+    });
+    item.addEventListener('drop', function (e) {
+      if (!dragId || item.dataset.id === dragId) return;
+      e.preventDefault();
+      var r = item.getBoundingClientRect();
+      var below = e.clientY > r.top + r.height / 2;
+      reorderWorkspace(dragId, item.dataset.id, below, item.dataset.folder || null);
+    });
+  });
+}
+
+function clearDropMarks(list) {
+  list.querySelectorAll('.drop-above,.drop-below').forEach(function (el) {
+    el.classList.remove('drop-above', 'drop-below');
+  });
+}
+
+async function reorderWorkspace(draggedId, targetId, placeBelow, targetFolder) {
+  if (draggedId === targetId) return;
+  var dragged = workspaces.find(function (w) { return w.id === draggedId; });
+  if (!dragged) return;
+
+  workspaces = workspaces.filter(function (w) { return w.id !== draggedId; });
+  dragged.folderId = targetFolder || null;
+
+  var ti = workspaces.findIndex(function (w) { return w.id === targetId; });
+  if (ti < 0) ti = workspaces.length - 1;
+  workspaces.splice(ti + (placeBelow ? 1 : 0), 0, dragged);
+
+  await saveWorkspaces(workspaces);
+  applyFilter();
 }
 
 async function onItemClick(e) {
   var btn = e.target.closest('[data-action]');
   if (btn) {
     e.stopPropagation();
-    if (btn.dataset.action === 'newtab') await smartOpen(btn.dataset.url, true);
-    else if (btn.dataset.action === 'delete') await deleteWs(btn.dataset.id);
-    else if (btn.dataset.action === 'edit') startEdit(btn.dataset.id);
+    var action = btn.dataset.action;
+    if (action === 'newtab') await smartOpen(btn.dataset.url, true);
+    else if (action === 'delete') await deleteWs(btn.dataset.id);
+    else if (action === 'edit') startEdit(btn.dataset.id);
+    else if (action === 'add') openAddForm(btn.dataset.folder || null);
     return;
   }
   var url = e.currentTarget.dataset.url;
@@ -250,6 +314,7 @@ function startEdit(id) {
   document.getElementById('f-emoji').value = ws.emoji || '';
   document.getElementById('f-name').value = ws.name;
   document.getElementById('f-url').value = ws.url;
+  buildSwatches(document.getElementById('f-colors'), ws.colorId != null ? ws.colorId : null);
   document.getElementById('btn-save').textContent = '수정';
   populateFolderSelect(ws.folderId);
   addForm.classList.add('open');
@@ -266,6 +331,8 @@ async function deleteWs(id) {
 function onSearch() { applyFilter(); }
 
 function onSearchKey(e) {
+  if (Settings.isOpen()) return;
+
   if (!document.getElementById('search').value && e.key >= '1' && e.key <= '9') {
     var idx = parseInt(e.key) - 1;
     if (idx < displayOrder.length) {
@@ -287,7 +354,7 @@ function onSearchKey(e) {
       window.close();
     }
   }
-  if (e.key === 'd' && !document.getElementById('search').value) {
+  if (Settings.matches(e, Settings.get('openDashFromPopup')) && !document.getElementById('search').value) {
     e.preventDefault();
     openDashboard();
   }
@@ -308,17 +375,12 @@ function applyFilter() {
 // ── Add / Edit Form ──
 var addForm = document.getElementById('add-form');
 
-document.getElementById('btn-add').addEventListener('click', function () {
-  var isOpen = addForm.classList.contains('open');
-  if (isOpen && !editingId) {
-    addForm.classList.remove('open');
-    clearForm();
-    return;
-  }
+function openAddForm(folderId) {
   editingId = null;
   clearForm();
   document.getElementById('btn-save').textContent = '저장';
-  populateFolderSelect(null);
+  populateFolderSelect(folderId || null);
+  buildSwatches(document.getElementById('f-colors'), null);
   addForm.classList.add('open');
 
   if (currentTabUrl.includes('notion.so')) {
@@ -326,6 +388,16 @@ document.getElementById('btn-add').addEventListener('click', function () {
     if (!urlInput.value) urlInput.value = currentTabUrl.split('?')[0];
   }
   document.getElementById('f-name').focus();
+}
+
+document.getElementById('btn-add').addEventListener('click', function () {
+  var isOpen = addForm.classList.contains('open');
+  if (isOpen && !editingId) {
+    addForm.classList.remove('open');
+    clearForm();
+    return;
+  }
+  openAddForm(null);
 });
 
 document.getElementById('btn-cancel').addEventListener('click', function () {
@@ -369,6 +441,8 @@ async function saveForm() {
   var folderId = document.getElementById('f-folder').value || null;
   if (folderId === '__new__') folderId = null;
 
+  var colorId = getSwatch(document.getElementById('f-colors'));
+
   if (editingId) {
     var ws = workspaces.find(function (w) { return w.id === editingId; });
     if (ws) {
@@ -376,9 +450,10 @@ async function saveForm() {
       ws.url = url;
       ws.emoji = emoji || null;
       ws.folderId = folderId;
+      ws.colorId = colorId;
     }
   } else {
-    workspaces.push({ id: Date.now().toString(), name: name, url: url, emoji: emoji || null, folderId: folderId });
+    workspaces.push({ id: Date.now().toString(), name: name, url: url, emoji: emoji || null, folderId: folderId, colorId: colorId });
   }
 
   await saveWorkspaces(workspaces);

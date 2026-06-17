@@ -10,7 +10,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Notion Switcher (Alt+N)"
+    "default_title": "Notion Switcher"
   },
   "permissions": ["storage", "tabs"],
   "background": {

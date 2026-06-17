@@ -1,16 +1,5 @@
 'use strict';
 
-const COLORS = [
-  '#3d3d5c', '#3d4f3d', '#4f3d3d', '#3d4a4f',
-  '#4a3d4f', '#4f4a3d', '#3d453f', '#45383d',
-];
-
-function hashColor(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
-  return COLORS[Math.abs(h) % COLORS.length];
-}
-
 function getInitial(name) {
   if (!name) return '?';
   const first = [...name][0];
@@ -56,6 +45,7 @@ var editingWsId = null;
 var editingFolderId = null;
 
 async function init() {
+  Theme.init();
   var results = await Promise.all([loadWorkspaces(), loadFolders()]);
   workspaces = results[0];
   folders = results[1];
@@ -70,6 +60,9 @@ async function init() {
   document.getElementById('m-save').addEventListener('click', saveWs);
   document.getElementById('fm-cancel').addEventListener('click', closeFolderModal);
   document.getElementById('fm-save').addEventListener('click', saveFolder);
+
+  Settings.mount(document.getElementById('btn-theme'));
+  CustomSelect.enhance(document.getElementById('m-folder'));
 
   document.addEventListener('keydown', onGlobalKey);
 
@@ -182,19 +175,20 @@ function render() {
 }
 
 function renderCard(ws, idx) {
-  var color = hashColor(ws.name);
+  var tile = tileFor(ws);
   var icon = ws.emoji
     ? '<span class="emoji">' + esc(ws.emoji) + '</span>'
-    : '<span class="initial">' + esc(getInitial(ws.name)) + '</span>';
+    : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
   var badge = idx < 9 ? '<div class="card-badge">' + (idx + 1) + '</div>' : '';
 
-  return '<div class="card" data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" draggable="true">' +
+  return '<div class="card" data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-folder="' + esc(ws.folderId || '') + '" draggable="true">' +
+    '<div class="card-handle" title="드래그하여 정렬">⠿</div>' +
     '<div class="card-actions">' +
       '<button class="card-action-btn edit" data-action="edit" data-id="' + esc(ws.id) + '" title="편집">✎</button>' +
       '<button class="card-action-btn del" data-action="delete" data-id="' + esc(ws.id) + '" title="삭제">✕</button>' +
     '</div>' +
     badge +
-    '<div class="card-icon" style="background:' + color + '">' + icon + '</div>' +
+    '<div class="card-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
     '<div class="card-name">' + esc(ws.name) + '</div>' +
     '<div class="card-url">' + esc(shortUrl(ws.url)) + '</div>' +
   '</div>';
@@ -203,7 +197,7 @@ function renderCard(ws, idx) {
 function renderFolderSection(folder, items, startIdx) {
   var html = '<div class="folder-section" data-folder-id="' + esc(folder.id) + '">' +
     '<div class="folder-header">' +
-      '<div class="folder-title">' + (folder.emoji ? esc(folder.emoji) : '📁') + ' ' + esc(folder.name) + '</div>' +
+      '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '📁') + '</span>' + esc(folder.name) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
       '<div class="folder-actions">' +
         '<button class="folder-btn" data-action="edit-folder" data-id="' + esc(folder.id) + '" title="편집">✎</button>' +
@@ -225,7 +219,7 @@ function renderFolderSection(folder, items, startIdx) {
 function renderUnfiledSection(items, startIdx) {
   var html = '<div class="folder-section" data-folder-id="">' +
     '<div class="folder-header">' +
-      '<div class="folder-title">📋 미분류</div>' +
+      '<div class="folder-title"><span class="ft-emoji">📋</span>미분류</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
     '</div>' +
     '<div class="folder-grid grid">';
@@ -280,6 +274,28 @@ function bindDragDrop() {
     card.addEventListener('dragend', function () {
       card.classList.remove('dragging');
       sections.forEach(function (s) { s.classList.remove('drag-over'); });
+      clearCardMarks();
+    });
+    card.addEventListener('dragover', function (e) {
+      var dragging = document.querySelector('.card.dragging');
+      if (!dragging || dragging === card) return;
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = 'move';
+      var r = card.getBoundingClientRect();
+      var after = e.clientX > r.left + r.width / 2;
+      clearCardMarks();
+      card.classList.add(after ? 'drop-right' : 'drop-left');
+    });
+    card.addEventListener('drop', function (e) {
+      var draggedId = e.dataTransfer.getData('text/plain');
+      if (!draggedId || draggedId === card.dataset.id) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var r = card.getBoundingClientRect();
+      var after = e.clientX > r.left + r.width / 2;
+      clearCardMarks();
+      reorderCard(draggedId, card.dataset.id, after, card.dataset.folder || null);
     });
   });
 
@@ -310,6 +326,25 @@ async function moveToFolder(wsId, folderId) {
   var newFolderId = folderId || null;
   if ((ws.folderId || null) === newFolderId) return;
   ws.folderId = newFolderId;
+  await saveWorkspaces(workspaces);
+  applyFilter();
+}
+
+function clearCardMarks() {
+  document.querySelectorAll('.card.drop-left,.card.drop-right').forEach(function (el) {
+    el.classList.remove('drop-left', 'drop-right');
+  });
+}
+
+async function reorderCard(draggedId, targetId, placeAfter, targetFolder) {
+  if (draggedId === targetId) return;
+  var dragged = workspaces.find(function (w) { return w.id === draggedId; });
+  if (!dragged) return;
+  workspaces = workspaces.filter(function (w) { return w.id !== draggedId; });
+  dragged.folderId = targetFolder || null;
+  var ti = workspaces.findIndex(function (w) { return w.id === targetId; });
+  if (ti < 0) ti = workspaces.length - 1;
+  workspaces.splice(ti + (placeAfter ? 1 : 0), 0, dragged);
   await saveWorkspaces(workspaces);
   applyFilter();
 }
@@ -365,6 +400,8 @@ function applyFilter() {
 
 // ── Global Keys ──
 function onGlobalKey(e) {
+  if (Settings.isOpen()) return;
+
   var search = document.getElementById('search');
   var wsModal = document.getElementById('modal');
   var folderModalEl = document.getElementById('folder-modal');
@@ -378,7 +415,7 @@ function onGlobalKey(e) {
     return;
   }
 
-  if (e.key === '/' && document.activeElement !== search) {
+  if (Settings.matches(e, Settings.get('focusSearch')) && document.activeElement !== search) {
     e.preventDefault();
     search.focus();
     return;
@@ -416,6 +453,7 @@ function openWsModal(ws) {
   document.getElementById('m-emoji').value = ws ? (ws.emoji || '') : '';
   document.getElementById('m-name').value = ws ? ws.name : '';
   document.getElementById('m-url').value = ws ? ws.url : '';
+  buildSwatches(document.getElementById('m-colors'), ws && ws.colorId != null ? ws.colorId : null);
 
   var select = document.getElementById('m-folder');
   var optionsHtml = '<option value="">📋 미분류</option>';
@@ -444,6 +482,7 @@ async function saveWs() {
   var name = document.getElementById('m-name').value.trim();
   var url = document.getElementById('m-url').value.trim();
   var folderId = document.getElementById('m-folder').value || null;
+  var colorId = getSwatch(document.getElementById('m-colors'));
 
   var ok = true;
   var fName = document.getElementById('m-name');
@@ -464,6 +503,7 @@ async function saveWs() {
       ws.url = url;
       ws.emoji = emoji || null;
       ws.folderId = folderId;
+      ws.colorId = colorId;
     }
   } else {
     workspaces.push({
@@ -471,7 +511,8 @@ async function saveWs() {
       name: name,
       url: url,
       emoji: emoji || null,
-      folderId: folderId
+      folderId: folderId,
+      colorId: colorId
     });
   }
 
