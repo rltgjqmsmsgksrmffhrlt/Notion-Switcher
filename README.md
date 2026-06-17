@@ -25,12 +25,6 @@ Notion 워크스페이스를 빠르게 전환할 수 있는 Chrome 확장 프로
 - 기존 Notion 탭 감지 및 자동 전환 (팝업)
 - `Shift+클릭`으로 새 탭에서 열기 (팝업)
 
-### 설정
-- 테마: 시스템 / 라이트 / 다크 선택
-- 대시보드와 팝업에 동일한 테마 적용
-- 내부 단축키 편집 및 확장 프로그램 내부 충돌 검사
-- 전역 단축키는 Chrome 설정(`chrome://extensions/shortcuts`)으로 연결
-
 ---
 
 ## UI 구성
@@ -55,15 +49,13 @@ Notion 워크스페이스를 빠르게 전환할 수 있는 Chrome 확장 프로
 
 | 단축키 | 동작 | 위치 |
 |--------|------|------|
-| `Alt+N` 기본값 | 팝업 열기 | 전역, Chrome 설정에서 변경 |
-| `Alt+Shift+N` 기본값 | 대시보드 열기 | 전역, Chrome 설정에서 변경 |
+| `Alt+N` | 팝업 열기 | 전역 |
+| `Alt+Shift+N` | 대시보드 열기 | 전역 |
 | `1`~`9` | 해당 번호 워크스페이스로 이동 | 팝업, 대시보드 |
 | `Enter` | 첫 번째 결과 열기 | 검색 시 |
 | `Escape` | 검색 초기화 / 닫기 | 팝업, 대시보드 |
-| `/` 기본값 | 검색창 포커스 | 대시보드, 설정에서 변경 |
-| `d` 기본값 | 대시보드 열기 | 팝업, 설정에서 변경 |
-
-Chrome 확장 프로그램의 전역 단축키는 브라우저가 직접 관리하므로 확장 프로그램 화면 안에서 바로 변경할 수 없습니다. 설정 패널은 현재 Chrome에 등록된 전역 단축키를 표시하고, 변경이 필요하면 Chrome 단축키 설정 화면을 엽니다.
+| `/` | 검색창 포커스 | 대시보드 |
+| `d` | 대시보드 열기 | 팝업 (검색창 비어있을 때) |
 
 ---
 
@@ -77,9 +69,8 @@ workspaces: [
     id: string,        // 고유 ID (timestamp)
     name: string,      // 워크스페이스 이름
     url: string,       // Notion URL
-    emoji: string|null,  // 이모지 아이콘
-    folderId: string|null, // 소속 폴더 ID (없으면 미분류)
-    colorId: number|null // 아이콘 타일 색상 (없으면 자동)
+    emoji: string|null, // 이모지 아이콘
+    folderId: string|null // 소속 폴더 ID (없으면 미분류)
   }
 ]
 
@@ -104,20 +95,10 @@ notion-switcher/
 ├── popup.js           # 팝업 로직
 ├── dashboard.html     # 대시보드 UI
 ├── dashboard.js       # 대시보드 로직
-├── ui.js              # 테마, 컬러, 커스텀 셀렉트 공용 헬퍼
-├── settings.js        # 테마/단축키 설정 패널
-├── styles/
-│   ├── tokens.css     # 디자인 토큰
-│   └── components.css # 공용 컴포넌트 스타일
 ├── icons/
 │   ├── icon16.png
 │   ├── icon48.png
 │   └── icon128.png
-├── preview/
-│   ├── chrome-mock.js
-│   ├── dashboard-preview.html
-│   └── popup-preview.html
-├── uploads/           # 참고 이미지 원본
 └── README.md
 ```
 

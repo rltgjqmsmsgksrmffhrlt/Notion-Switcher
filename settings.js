@@ -4,7 +4,6 @@
 
 window.Settings = (function () {
   var SC_KEY = 'ns_shortcuts';
-  var globalShortcuts = {};
 
   // Shortcut catalog. scope:'global' = Chrome-managed (read-only here),
   // scope:'page' = handled in-page (fully editable + applied live).
@@ -26,29 +25,10 @@ window.Settings = (function () {
   }
   function def(id) { var d = DEFS.find(function (x) { return x.id === id; }); return d ? d.def : ''; }
   function get(id) { var o = loadOverrides(); return o[id] || def(id); }
-  function displayShortcut(d) {
-    if (d.scope === 'global') return globalShortcuts[d.id] || '미지정';
-    return get(d.id);
-  }
   function assignments() {
     var map = {};
-    DEFS.forEach(function (d) { map[d.id] = displayShortcut(d); });
+    DEFS.forEach(function (d) { map[d.id] = get(d.id); });
     return map;
-  }
-  function refreshGlobalShortcuts(done) {
-    globalShortcuts = {};
-    try {
-      if (!chrome.commands || !chrome.commands.getAll) { if (done) done(); return; }
-      chrome.commands.getAll(function (commands) {
-        (commands || []).forEach(function (cmd) {
-          if (cmd.name === '_execute_action') globalShortcuts.popup = cmd.shortcut || '';
-          if (cmd.name === 'open-dashboard') globalShortcuts.dashboard = cmd.shortcut || '';
-        });
-        if (done) done();
-      });
-    } catch (e) {
-      if (done) done();
-    }
   }
 
   // ── key combo helpers ──
@@ -90,7 +70,7 @@ window.Settings = (function () {
     var map = assignments();
     var hit = null;
     Object.keys(map).forEach(function (id) {
-      if (id !== forId && map[id] && map[id] !== '미지정' && map[id].toUpperCase() === combo.toUpperCase()) {
+      if (id !== forId && map[id] && map[id].toUpperCase() === combo.toUpperCase()) {
         var od = DEFS.find(function (x) { return x.id === id; });
         hit = { type: 'shortcut', label: '"' + (od ? od.label : id) + '"와 충돌' };
       }
@@ -124,16 +104,22 @@ window.Settings = (function () {
     }).join('');
 
     var rows = DEFS.map(function (d) {
-      var combo = displayShortcut(d);
+      var combo = get(d.id);
       var right;
       if (d.scope === 'global') {
-        right = '<button class="sc-link" data-chrome="1">Chrome에서 변경</button>';
+        right = '<button class="sc-link" data-chrome="1">Chrome ↗</button>';
       } else {
         right = '<button class="sc-edit" data-edit="' + d.id + '">변경</button>';
       }
+      var scopeBadge = d.scope === 'global'
+        ? '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--field);color:var(--ink-3);flex-shrink:0">전역</span>'
+        : '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--accent-soft);color:var(--accent);flex-shrink:0">앱 내</span>';
       return '<div class="sc-row" data-row="' + d.id + '">' +
-        '<div style="flex:1;min-width:0">' +
-          '<div class="sc-label">' + d.label + '</div>' +
+        '<div class="sc-meta">' +
+          '<div style="display:flex;align-items:center;gap:6px">' +
+            '<div class="sc-label">' + d.label + '</div>' +
+            scopeBadge +
+          '</div>' +
           '<div class="sc-sub">' + d.sub + '</div>' +
           '<div class="sc-error" data-err="' + d.id + '" style="display:none"></div>' +
         '</div>' +
@@ -153,7 +139,6 @@ window.Settings = (function () {
         '<div class="set-h">단축키</div>' + rows +
         '<div class="sc-note">전역 단축키는 브라우저가 관리해요. 다른 프로그램과 겹치면 ' +
         '<b>Chrome에서 변경</b>으로 <span class="mono">chrome://extensions/shortcuts</span>에서 바꿀 수 있어요.</div>' +
-        '<div class="sc-note">충돌 검사는 이 확장 프로그램 안의 전역/내부 단축키와 예약 키를 기준으로 합니다. OS나 다른 앱이 가로채는 전역 단축키는 Chrome 설정 화면에서 확인해야 합니다.</div>' +
       '</div>';
   }
 
@@ -218,16 +203,10 @@ window.Settings = (function () {
       overlay.innerHTML = '<div class="set-panel"></div>';
       document.body.appendChild(overlay);
       overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) close(); });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay.classList.contains('open') && !recording) close();
-      });
     }
+    render();
+    bind();
     overlay.classList.add('open');
-    overlay.querySelector('.set-panel').innerHTML = '<div class="set-loading">설정 불러오는 중...</div>';
-    refreshGlobalShortcuts(function () {
-      render();
-      bind();
-    });
   }
 
   var GEAR = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
@@ -235,7 +214,6 @@ window.Settings = (function () {
   return {
     get: get,
     matches: matches,
-    isOpen: function () { return !!(overlay && overlay.classList.contains('open')); },
     open: open,
     mount: function (btn) {
       btn.innerHTML = GEAR;

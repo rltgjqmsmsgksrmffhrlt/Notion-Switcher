@@ -5,7 +5,7 @@
 <title>Notion Switcher</title>
 <link rel="stylesheet" href="../styles/tokens.css">
 <link rel="stylesheet" href="../styles/components.css">
-<script>(function(){try{var t=localStorage.getItem('ns_theme')||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<script>(function(){try{if(localStorage.getItem('ns_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -352,7 +352,7 @@ body {
              placeholder="워크스페이스 검색... (숫자 1~9로 바로 이동)"
              autocomplete="off" spellcheck="false" autofocus>
     </div>
-    <button class="btn-secondary" id="btn-theme" title="테마" style="padding:11px 13px"></button>
+    <button class="btn-secondary" id="btn-settings" style="padding:11px 13px" title="설정"></button>
     <button class="btn-secondary" id="btn-add-folder">📁 폴더</button>
     <button class="btn-primary" id="btn-add">＋ 추가</button>
   </div>
@@ -363,7 +363,8 @@ body {
     <kbd>1</kbd>~<kbd>9</kbd> 바로 이동 &nbsp;&middot;&nbsp;
     <kbd>Enter</kbd> 첫 번째 결과 &nbsp;&middot;&nbsp;
     <kbd>/</kbd> 검색 포커스 &nbsp;&middot;&nbsp;
-    전역 단축키는 설정에서 확인
+    <kbd>Alt+N</kbd> 팝업 &nbsp;&middot;&nbsp;
+    <kbd>Alt+Shift+N</kbd> 이 페이지
   </div>
 </div>
 

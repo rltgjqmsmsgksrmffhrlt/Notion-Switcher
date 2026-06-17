@@ -61,15 +61,5 @@
     },
     windows: { update: function () { return Promise.resolve(); } },
     runtime: { getURL: function (p) { return p; } },
-    commands: {
-      getAll: function (cb) {
-        setTimeout(function () {
-          cb([
-            { name: '_execute_action', shortcut: 'Alt+N' },
-            { name: 'open-dashboard', shortcut: 'Alt+Shift+N' },
-          ]);
-        }, 0);
-      },
-    },
   };
 })();

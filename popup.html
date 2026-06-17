@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="stylesheet" href="styles/tokens.css">
 <link rel="stylesheet" href="styles/components.css">
-<script>(function(){try{var t=localStorage.getItem('ns_theme')||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<script>(function(){try{if(localStorage.getItem('ns_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -330,8 +330,8 @@ body {
     <span class="header-count" id="ws-count"></span>
   </div>
   <div class="header-right" style="display:flex;align-items:center;gap:2px">
-    <button class="btn-icon" id="btn-theme" title="테마"></button>
-    <button class="btn-dashboard" id="btn-dashboard" title="대시보드 열기">대시보드 ↗</button>
+    <button class="btn-icon" id="btn-settings" title="설정"></button>
+    <button class="btn-dashboard" id="btn-dashboard" title="Alt+Shift+N">대시보드 ↗</button>
   </div>
 </div>
 

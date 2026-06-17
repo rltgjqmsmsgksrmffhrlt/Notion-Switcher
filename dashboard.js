@@ -45,7 +45,6 @@ var editingWsId = null;
 var editingFolderId = null;
 
 async function init() {
-  Theme.init();
   var results = await Promise.all([loadWorkspaces(), loadFolders()]);
   workspaces = results[0];
   folders = results[1];
@@ -61,7 +60,8 @@ async function init() {
   document.getElementById('fm-cancel').addEventListener('click', closeFolderModal);
   document.getElementById('fm-save').addEventListener('click', saveFolder);
 
-  Settings.mount(document.getElementById('btn-theme'));
+  Theme.init();
+  Settings.mount(document.getElementById('btn-settings'));
   CustomSelect.enhance(document.getElementById('m-folder'));
 
   document.addEventListener('keydown', onGlobalKey);
@@ -400,8 +400,6 @@ function applyFilter() {
 
 // ── Global Keys ──
 function onGlobalKey(e) {
-  if (Settings.isOpen()) return;
-
   var search = document.getElementById('search');
   var wsModal = document.getElementById('modal');
   var folderModalEl = document.getElementById('folder-modal');
@@ -415,7 +413,7 @@ function onGlobalKey(e) {
     return;
   }
 
-  if (Settings.matches(e, Settings.get('focusSearch')) && document.activeElement !== search) {
+  if (e.key === '/' && document.activeElement !== search) {
     e.preventDefault();
     search.focus();
     return;

@@ -96,7 +96,6 @@ var editingId = null;
 var dragId = null;
 
 async function init() {
-  Theme.init();
   var results = await Promise.all([loadWorkspaces(), loadFolders()]);
   workspaces = results[0];
   folders = results[1];
@@ -116,7 +115,8 @@ async function init() {
   search.addEventListener('keydown', onSearchKey);
 
   document.getElementById('btn-dashboard').addEventListener('click', openDashboard);
-  Settings.mount(document.getElementById('btn-theme'));
+  Theme.init();
+  Settings.mount(document.getElementById('btn-settings'));
   CustomSelect.enhance(document.getElementById('f-folder'));
 }
 
@@ -331,8 +331,6 @@ async function deleteWs(id) {
 function onSearch() { applyFilter(); }
 
 function onSearchKey(e) {
-  if (Settings.isOpen()) return;
-
   if (!document.getElementById('search').value && e.key >= '1' && e.key <= '9') {
     var idx = parseInt(e.key) - 1;
     if (idx < displayOrder.length) {
@@ -354,7 +352,7 @@ function onSearchKey(e) {
       window.close();
     }
   }
-  if (Settings.matches(e, Settings.get('openDashFromPopup')) && !document.getElementById('search').value) {
+  if (e.key === 'd' && !document.getElementById('search').value) {
     e.preventDefault();
     openDashboard();
   }
