@@ -1,119 +1,118 @@
-# Notion Workspace Switcher
+# Notion Switcher
 
-Notion 워크스페이스를 빠르게 전환할 수 있는 Chrome 확장 프로그램.
+> Quickly switch between Notion workspaces with a single click or keyboard shortcut.
 
----
-
-## 주요 기능
-
-### 워크스페이스 관리
-- **추가**: 이름, URL, 이모지를 입력하여 워크스페이스 등록
-- **편집**: 등록된 워크스페이스의 이름, URL, 이모지, 폴더를 수정
-- **삭제**: 호버 시 나타나는 ✕ 버튼으로 삭제
-- **검색**: 이름, URL, 이모지로 실시간 필터링
-
-### 폴더 (주제별 그룹)
-- **폴더 생성**: 대시보드 상단 `📁 폴더` 버튼 또는 팝업 폼의 "＋ 새 폴더..." 옵션
-- **폴더 편집/삭제**: 대시보드에서 폴더 헤더 호버 시 편집(✎)/삭제(✕) 버튼
-- **폴더 배정**: 워크스페이스 추가/편집 시 폴더 선택 드롭다운
-- **드래그 앤 드롭**: 대시보드에서 카드를 폴더 간 드래그하여 이동
-- 폴더 삭제 시 내부 워크스페이스는 "미분류"로 자동 이동
-
-### 빠른 전환
-- 숫자 키 `1`~`9`로 즉시 이동
-- `Enter`로 첫 번째 검색 결과 열기
-- 기존 Notion 탭 감지 및 자동 전환 (팝업)
-- `Shift+클릭`으로 새 탭에서 열기 (팝업)
+Notion Switcher is a Chrome extension that lets you jump between Notion workspaces in under 2 seconds. No more digging through sidebars — just press `Alt+N` and go.
 
 ---
 
-## UI 구성
+## Features
 
-### 팝업 (Alt+N)
-- 320px 컴팩트 팝업
-- 검색 + 워크스페이스 리스트
-- 호버 시 편집(✎), 새 탭(↗), 삭제(✕) 버튼
-- 하단 폼에서 워크스페이스 추가/편집 + 폴더 선택/생성
-- 폴더가 있으면 그룹별 섹션 헤더 표시
+### Workspace Management
+- **Add / Edit / Delete** workspaces with name, URL, emoji, and color
+- **Folders** — organize workspaces into groups
+- **Search** — real-time filtering by name, URL, or emoji
+- **Drag & Drop** — reorder workspaces and move between folders
 
-### 대시보드 (Alt+Shift+N)
-- 전체 페이지 그리드 레이아웃
-- 카드 기반 워크스페이스 표시
-- 폴더별 섹션으로 그룹화
-- 모달 폼으로 워크스페이스/폴더 추가 및 편집
-- 드래그 앤 드롭으로 폴더 간 이동
+### Quick Switch
+- Press `1`~`9` to jump to a workspace instantly
+- `Enter` opens the first search result
+- `Shift+click` opens in a new tab
 
----
+### Two Views
+- **Popup** (`Alt+N`) — compact 320px panel for fast switching
+- **Dashboard** (`Alt+Shift+N`) — full-page grid for managing all workspaces
 
-## 단축키
+### Settings
+- **Theme** — System / Light / Dark
+- **Custom shortcuts** — remap in-app keyboard shortcuts with conflict detection
+- **Feedback** — built-in Tally form for bug reports and feature requests
 
-| 단축키 | 동작 | 위치 |
-|--------|------|------|
-| `Alt+N` | 팝업 열기 | 전역 |
-| `Alt+Shift+N` | 대시보드 열기 | 전역 |
-| `1`~`9` | 해당 번호 워크스페이스로 이동 | 팝업, 대시보드 |
-| `Enter` | 첫 번째 결과 열기 | 검색 시 |
-| `Escape` | 검색 초기화 / 닫기 | 팝업, 대시보드 |
-| `/` | 검색창 포커스 | 대시보드 |
-| `d` | 대시보드 열기 | 팝업 (검색창 비어있을 때) |
+### Internationalization
+- Auto-switches between **Korean** and **English** based on browser language
+- All UI strings are localized via Chrome i18n API
 
 ---
 
-## 데이터 구조
+## Keyboard Shortcuts
 
-`chrome.storage.sync`에 저장.
-
-```
-workspaces: [
-  {
-    id: string,        // 고유 ID (timestamp)
-    name: string,      // 워크스페이스 이름
-    url: string,       // Notion URL
-    emoji: string|null, // 이모지 아이콘
-    folderId: string|null // 소속 폴더 ID (없으면 미분류)
-  }
-]
-
-folders: [
-  {
-    id: string,        // 고유 ID (timestamp)
-    name: string,      // 폴더 이름
-    emoji: string|null  // 이모지 아이콘
-  }
-]
-```
+| Shortcut | Action | Scope |
+|----------|--------|-------|
+| `Alt+N` | Open popup | Global |
+| `Alt+Shift+N` | Open dashboard | Global |
+| `1`~`9` | Jump to workspace | Popup / Dashboard |
+| `Enter` | Open first result | Search |
+| `Escape` | Clear search / close | Popup / Dashboard |
+| `/` | Focus search | Dashboard |
+| `D` | Open dashboard | Popup (empty search) |
 
 ---
 
-## 파일 구조
+## Install
+
+### From source (Developer mode)
+1. Go to `chrome://extensions`
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select the `notion-switcher` folder
+
+### Chrome Web Store
+Coming soon.
+
+---
+
+## Tech Stack
+
+| | |
+|---|---|
+| Platform | Chrome Extension (Manifest V3) |
+| Language | Vanilla JavaScript |
+| Storage | chrome.storage.sync (cross-device sync) |
+| Styling | CSS Custom Properties |
+| i18n | Chrome i18n API (`_locales/`) |
+| Build | None (no bundler) |
+
+---
+
+## File Structure
 
 ```
 notion-switcher/
-├── manifest.json      # Chrome Extension Manifest V3
-├── background.js      # 서비스 워커 (대시보드 탭 관리)
-├── popup.html         # 팝업 UI
-├── popup.js           # 팝업 로직
-├── dashboard.html     # 대시보드 UI
-├── dashboard.js       # 대시보드 로직
-├── icons/
-│   ├── icon16.png
-│   ├── icon48.png
-│   └── icon128.png
-└── README.md
+├── manifest.json          # Extension config
+├── background.js          # Service worker
+├── popup.html / popup.js  # Popup UI
+├── dashboard.html / dashboard.js  # Dashboard UI
+├── ui.js                  # Shared UI helpers
+├── settings.js            # Settings panel
+├── i18n.js                # i18n helper
+├── theme-init.js          # Early theme application
+├── styles/
+│   ├── tokens.css         # Design tokens
+│   └── components.css     # Shared component styles
+├── icons/                 # Extension icons + QR images
+├── _locales/
+│   ├── ko/messages.json   # Korean
+│   └── en/messages.json   # English
+└── PRD.md                 # Product Requirements Document
 ```
 
 ---
 
-## 설치 방법
+## Permissions
 
-1. `chrome://extensions` 접속
-2. "개발자 모드" 활성화
-3. "압축해제된 확장 프로그램을 로드합니다" 클릭
-4. `notion-switcher` 폴더 선택
+| Permission | Usage |
+|------------|-------|
+| `storage` | Save workspaces, folders, and settings (synced across devices) |
+| `tabs` | Detect active tab URL + open workspaces in new tabs |
 
 ---
 
-## 권한
+## Feedback
 
-- `storage`: 워크스페이스/폴더 데이터 저장
-- `tabs`: 탭 감지 및 전환
+Bug reports and feature requests: [Feedback Form](https://tally.so/r/9qxE61)
+
+---
+
+## License
+
+MIT
