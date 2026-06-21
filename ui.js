@@ -70,7 +70,7 @@ window.buildSwatches = function (container, selectedId) {
   var auto = document.createElement('button');
   auto.type = 'button';
   auto.className = 'swatch-auto' + (selectedId == null ? ' is-sel' : '');
-  auto.textContent = '자동';
+  auto.textContent = t('auto');
   auto.dataset.color = '';
   container.appendChild(auto);
 

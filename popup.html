@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="styles/tokens.css">
@@ -331,13 +331,13 @@ body {
     <span class="header-count" id="ws-count"></span>
   </div>
   <div class="header-right" style="display:flex;align-items:center;gap:2px">
-    <button class="btn-icon" id="btn-settings" title="설정"></button>
-    <button class="btn-dashboard" id="btn-dashboard" title="Alt+Shift+N">대시보드 ↗</button>
+    <button class="btn-icon" id="btn-settings" data-i18n-title="settings"></button>
+    <button class="btn-dashboard" id="btn-dashboard" title="Alt+Shift+N" data-i18n="dashboard"></button>
   </div>
 </div>
 
 <div class="search-wrap">
-  <input class="search-input" id="search" type="text" placeholder="검색 또는 숫자(1~9)로 바로 이동" autocomplete="off" spellcheck="false">
+  <input class="search-input" id="search" type="text" data-i18n-placeholder="searchPlaceholder" autocomplete="off" spellcheck="false">
 </div>
 
 <div class="workspace-list" id="ws-list"></div>
@@ -345,35 +345,36 @@ body {
 <div class="add-form" id="add-form">
   <div class="form-row">
     <input class="form-input emoji" id="f-emoji" type="text" placeholder="🏢" maxlength="2">
-    <input class="form-input" id="f-name" type="text" placeholder="워크스페이스 이름">
+    <input class="form-input" id="f-name" type="text" data-i18n-placeholder="workspaceName">
   </div>
   <div class="swatch-row" id="f-colors"></div>
   <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
   <div class="form-row">
     <select class="form-select" id="f-folder">
-      <option value="">📋 미분류</option>
+      <option value="" data-i18n="uncategorized"></option>
     </select>
   </div>
   <div class="form-row" id="new-folder-row" style="display:none">
     <input class="form-input" id="f-folder-emoji" type="text" placeholder="📁" maxlength="2" style="width:40px;flex:none;text-align:center">
-    <input class="form-input" id="f-folder-name" type="text" placeholder="새 폴더 이름">
-    <button class="btn-save" id="btn-folder-create" style="padding:6px 10px;flex:none">추가</button>
+    <input class="form-input" id="f-folder-name" type="text" data-i18n-placeholder="newFolderName">
+    <button class="btn-save" id="btn-folder-create" style="padding:6px 10px;flex:none" data-i18n="add"></button>
   </div>
   <div class="form-btns">
-    <button class="btn-cancel-form" id="btn-cancel">취소</button>
-    <button class="btn-save" id="btn-save">저장</button>
+    <button class="btn-cancel-form" id="btn-cancel" data-i18n="cancel"></button>
+    <button class="btn-save" id="btn-save" data-i18n="save"></button>
   </div>
 </div>
 
 <div class="footer">
   <button class="btn-add" id="btn-add">
     <span class="btn-add-icon">＋</span>
-    <span>워크스페이스 추가</span>
+    <span data-i18n="addWorkspace"></span>
   </button>
 </div>
 
-<div class="kbd-hint">숫자 <b>1~9</b> 바로 이동 · <b>Enter</b> 첫 번째 결과 · <b>Shift+클릭</b> 새 탭</div>
+<div class="kbd-hint" data-i18n="kbdHint"></div>
 
+<script src="i18n.js"></script>
 <script src="ui.js"></script>
 <script src="settings.js"></script>
 <script src="popup.js"></script>

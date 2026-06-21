@@ -8,10 +8,10 @@ window.Settings = (function () {
   // Shortcut catalog. scope:'global' = Chrome-managed (read-only here),
   // scope:'page' = handled in-page (fully editable + applied live).
   var DEFS = [
-    { id: 'popup',     label: '팝업 열기',        sub: '전역 · Chrome 관리', scope: 'global', def: 'Alt+N' },
-    { id: 'dashboard', label: '대시보드 열기',     sub: '전역 · Chrome 관리', scope: 'global', def: 'Alt+Shift+N' },
-    { id: 'focusSearch',       label: '검색창 포커스',  sub: '대시보드',  scope: 'page', def: '/' },
-    { id: 'openDashFromPopup', label: '팝업 → 대시보드', sub: '팝업',     scope: 'page', def: 'D' },
+    { id: 'popup',     labelKey: 'scPopup',        subKey: 'scGlobalChrome', scope: 'global', def: 'Alt+N' },
+    { id: 'dashboard', labelKey: 'scDashboard',    subKey: 'scGlobalChrome', scope: 'global', def: 'Alt+Shift+N' },
+    { id: 'focusSearch',       labelKey: 'scFocusSearch',  subKey: 'scScopeDashboard',  scope: 'page', def: '/' },
+    { id: 'openDashFromPopup', labelKey: 'scPopupToDash', subKey: 'scScopePopup',     scope: 'page', def: 'D' },
   ];
 
   // In-page keys that are fixed / reserved (can't be reassigned to).
@@ -65,14 +65,14 @@ window.Settings = (function () {
     var bareKey = combo.split('+').pop();
     var hasMod = combo.indexOf('+') >= 0;
     if (d && d.scope === 'page' && !hasMod && RESERVED.indexOf(bareKey) >= 0) {
-      return { type: 'reserved', label: '기본 키(' + bareKey + ')와 충돌' };
+      return { type: 'reserved', label: t('conflictReserved', [bareKey]) };
     }
     var map = assignments();
     var hit = null;
     Object.keys(map).forEach(function (id) {
       if (id !== forId && map[id] && map[id].toUpperCase() === combo.toUpperCase()) {
         var od = DEFS.find(function (x) { return x.id === id; });
-        hit = { type: 'shortcut', label: '"' + (od ? od.label : id) + '"와 충돌' };
+        hit = { type: 'shortcut', label: t('conflictShortcut', [od ? t(od.labelKey) : id]) };
       }
     });
     return hit;
@@ -99,25 +99,25 @@ window.Settings = (function () {
   function render() {
     var theme = Theme.get();
     var seg = ['system','light','dark'].map(function (m) {
-      var label = m === 'system' ? '시스템' : (m === 'light' ? '라이트' : '다크');
+      var label = m === 'system' ? t('themeSystem') : (m === 'light' ? t('themeLight') : t('themeDark'));
       return '<button data-theme-opt="' + m + '" class="' + (theme === m ? 'on' : '') + '">' + label + '</button>';
     }).join('');
 
     var rows = DEFS.map(function (d) {
       var combo = get(d.id);
       var right = d.scope === 'page'
-        ? '<button class="sc-edit" data-edit="' + d.id + '">변경</button>'
+        ? '<button class="sc-edit" data-edit="' + d.id + '">' + t('change') + '</button>'
         : '';
       var scopeBadge = d.scope === 'global'
-        ? '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--field);color:var(--ink-3);flex-shrink:0">전역</span>'
-        : '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--accent-soft);color:var(--accent);flex-shrink:0">앱 내</span>';
+        ? '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--field);color:var(--ink-3);flex-shrink:0">' + t('scopeGlobal') + '</span>'
+        : '<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--accent-soft);color:var(--accent);flex-shrink:0">' + t('scopeInApp') + '</span>';
       return '<div class="sc-row" data-row="' + d.id + '">' +
         '<div class="sc-meta">' +
           '<div style="display:flex;align-items:center;gap:6px">' +
-            '<div class="sc-label">' + d.label + '</div>' +
+            '<div class="sc-label">' + t(d.labelKey) + '</div>' +
             scopeBadge +
           '</div>' +
-          '<div class="sc-sub">' + d.sub + '</div>' +
+          '<div class="sc-sub">' + t(d.subKey) + '</div>' +
           '<div class="sc-error" data-err="' + d.id + '" style="display:none"></div>' +
         '</div>' +
         '<div class="sc-keys" data-keys="' + d.id + '">' + chip(combo) + '</div>' +
@@ -126,18 +126,43 @@ window.Settings = (function () {
     }).join('');
 
     overlay.querySelector('.set-panel').innerHTML =
-      '<div class="set-title-row"><div class="set-title">설정</div>' +
-        '<button class="btn-icon" data-close="1" title="닫기">✕</button></div>' +
+      '<div class="set-title-row"><div class="set-title">' + t('settingsTitle') + '</div>' +
+        '<button class="btn-icon" data-close="1" title="' + t('close') + '">✕</button></div>' +
       '<div class="set-section">' +
-        '<div class="set-h">테마</div>' +
+        '<div class="set-h">' + t('theme') + '</div>' +
         '<div class="seg" data-seg="theme">' + seg + '</div>' +
       '</div>' +
       '<div class="set-section">' +
-        '<div class="set-h">단축키</div>' + rows +
+        '<div class="set-h">' + t('shortcuts') + '</div>' + rows +
       '</div>' +
       '<div class="set-section set-bottom">' +
-        '<button class="sc-chrome-btn" data-chrome="1">Chrome 단축키 설정 열기 ↗</button>' +
-        '<div class="sc-note">전역 단축키(팝업·대시보드 열기)는 브라우저가 관리해요. 다른 프로그램과 겹치면 위 버튼으로 변경할 수 있어요.</div>' +
+        '<button class="sc-chrome-btn" data-chrome="1">' + t('chromeShortcuts') + '</button>' +
+        '<div class="sc-note">' + t('chromeShortcutsNote') + '</div>' +
+      '</div>' +
+      '<div class="set-section">' +
+        '<div class="tip-card">' +
+          '<div class="tip-emoji">☕</div>' +
+          '<div class="tip-title">' + t('tipTitle') + '</div>' +
+          '<div class="tip-desc">' + t('tipDesc') + '</div>' +
+          '<div class="tip-tabs">' +
+            '<button class="tip-tab on" data-qr-tab="toss">' + t('tipToss') + '</button>' +
+            '<button class="tip-tab" data-qr-tab="kakao">' + t('tipKakao') + '</button>' +
+          '</div>' +
+          '<div class="tip-qr">' +
+            '<img class="tip-qr-img" data-qr="toss" src="icons/qr-toss.png" alt="QR">' +
+            '<img class="tip-qr-img" data-qr="kakao" src="icons/qr-kakao.png" alt="QR" style="display:none">' +
+          '</div>' +
+          '<div class="tip-qr-hint">' + t('tipQrHint') + '</div>' +
+          '<div class="tip-account" data-copy-account="1">' + t('tipAccount') + ' <span class="tip-copy">' + t('copy') + '</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="set-section">' +
+        '<div class="tip-card">' +
+          '<div class="tip-emoji">💬</div>' +
+          '<div class="tip-title">' + t('feedbackTitle') + '</div>' +
+          '<div class="tip-desc">' + t('feedbackDesc') + '</div>' +
+          '<iframe data-tally-src="https://tally.so/embed/9qxE61?alignLeft=1&hideTitle=1&transparentBackground=1" loading="lazy" width="100%" height="340" frameborder="0" marginheight="0" marginwidth="0" title="Feedback" scrolling="no" style="border:none;border-radius:var(--r-md);margin-top:10px;overflow:hidden;background:#fff"></iframe>' +
+        '</div>' +
       '</div>';
   }
 
@@ -147,8 +172,8 @@ window.Settings = (function () {
     var errEl = overlay.querySelector('[data-err="' + id + '"]');
     var editBtn = overlay.querySelector('[data-edit="' + id + '"]');
     errEl.style.display = 'none';
-    keysEl.innerHTML = '<span class="sc-recording">키 입력… (Esc 취소)</span>';
-    if (editBtn) editBtn.textContent = '취소';
+    keysEl.innerHTML = '<span class="sc-recording">' + t('recordingKey') + '</span>';
+    if (editBtn) editBtn.textContent = t('cancel');
 
     var handler = function (e) {
       e.preventDefault();
@@ -160,7 +185,7 @@ window.Settings = (function () {
       if (c) {
         errEl.textContent = '⚠ ' + chipText(combo) + ' — ' + c.label;
         errEl.style.display = 'block';
-        keysEl.innerHTML = '<span class="sc-recording">다시 입력… (Esc 취소)</span>';
+        keysEl.innerHTML = '<span class="sc-recording">' + t('recordingRetry') + '</span>';
         return;
       }
       var o = loadOverrides();
@@ -193,6 +218,41 @@ window.Settings = (function () {
         catch (e) { window.open('chrome://extensions/shortcuts', '_blank'); }
       };
     });
+    overlay.querySelectorAll('[data-qr-tab]').forEach(function (tab) {
+      tab.onclick = function () {
+        overlay.querySelectorAll('[data-qr-tab]').forEach(function (t) { t.classList.remove('on'); });
+        tab.classList.add('on');
+        var which = tab.dataset.qrTab;
+        overlay.querySelectorAll('[data-qr]').forEach(function (img) {
+          img.style.display = img.dataset.qr === which ? 'block' : 'none';
+        });
+      };
+    });
+    var copyBtn = overlay.querySelector('[data-copy-account]');
+    if (copyBtn) {
+      copyBtn.onclick = function () {
+        navigator.clipboard.writeText('100032602565').then(function () {
+          var sp = copyBtn.querySelector('.tip-copy');
+          if (sp) { sp.textContent = t('copied'); setTimeout(function () { sp.textContent = t('copy'); }, 1500); }
+        });
+      };
+    }
+    overlay.querySelectorAll('iframe[data-tally-src]:not([src])').forEach(function (f) {
+      f.src = f.dataset.tallySrc;
+    });
+    if (!window.__tallyResize) {
+      window.__tallyResize = true;
+      window.addEventListener('message', function (e) {
+        if (e.data && e.data.event === 'Tally.FormLoaded') {
+          var f = overlay && overlay.querySelector('iframe[data-tally-src]');
+          if (f) f.style.height = (e.data.payload && e.data.payload.height || 300) + 'px';
+        }
+        if (e.data && e.data.event === 'Tally.ResizeFrame') {
+          var f = overlay && overlay.querySelector('iframe[data-tally-src]');
+          if (f) f.style.height = (e.data.payload && e.data.payload.height || 300) + 'px';
+        }
+      });
+    }
   }
 
   function open() {
@@ -216,7 +276,7 @@ window.Settings = (function () {
     open: open,
     mount: function (btn) {
       btn.innerHTML = GEAR;
-      btn.title = '설정';
+      btn.title = t('settings');
       btn.addEventListener('click', open);
     }
   };

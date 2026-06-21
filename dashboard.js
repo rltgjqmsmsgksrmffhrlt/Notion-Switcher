@@ -50,6 +50,8 @@ async function init() {
   workspaces = results[0];
   folders = results[1];
   filtered = workspaces.slice();
+  localizeHtml();
+  renderFooter();
   render();
   updateTotal();
 
@@ -103,9 +105,18 @@ async function init() {
   });
 }
 
+function renderFooter() {
+  document.getElementById('dash-footer').innerHTML =
+    '<kbd>1</kbd>~<kbd>9</kbd> ' + t('dashFooter1') + ' &nbsp;&middot;&nbsp;' +
+    '<kbd>Enter</kbd> ' + t('dashFooter2') + ' &nbsp;&middot;&nbsp;' +
+    '<kbd>/</kbd> ' + t('dashFooter3') + ' &nbsp;&middot;&nbsp;' +
+    '<kbd>Alt+N</kbd> ' + t('dashFooter4') + ' &nbsp;&middot;&nbsp;' +
+    '<kbd>Alt+Shift+N</kbd> ' + t('dashFooter5');
+}
+
 function updateTotal() {
   var el = document.getElementById('ws-total');
-  el.textContent = workspaces.length > 0 ? workspaces.length + '개 워크스페이스' : '';
+  el.textContent = workspaces.length > 0 ? t('countWorkspaces', [String(workspaces.length)]) : '';
 }
 
 // ── Render ──
@@ -119,8 +130,8 @@ function render() {
     content.innerHTML =
       '<div class="empty-state">' +
         '<div class="empty-icon">📋</div>' +
-        '<div class="empty-title">워크스페이스가 없습니다</div>' +
-        '<div class="empty-desc">상단 + 추가 버튼으로 Notion 워크스페이스를 등록해보세요.</div>' +
+        '<div class="empty-title">' + esc(t('emptyNoWorkspaces')) + '</div>' +
+        '<div class="empty-desc">' + esc(t('emptyAddHintDash')) + '</div>' +
       '</div>';
     return;
   }
@@ -129,8 +140,8 @@ function render() {
     content.innerHTML =
       '<div class="empty-state">' +
         '<div class="empty-icon">🔍</div>' +
-        '<div class="empty-title">검색 결과 없음</div>' +
-        '<div class="empty-desc">다른 키워드로 검색해보세요</div>' +
+        '<div class="empty-title">' + esc(t('emptyNoResults')) + '</div>' +
+        '<div class="empty-desc">' + esc(t('emptySearchHint')) + '</div>' +
       '</div>';
     return;
   }
@@ -183,10 +194,10 @@ function renderCard(ws, idx) {
   var badge = idx < 9 ? '<div class="card-badge">' + (idx + 1) + '</div>' : '';
 
   return '<div class="card" data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-folder="' + esc(ws.folderId || '') + '" draggable="true">' +
-    '<div class="card-handle" title="드래그하여 정렬">⠿</div>' +
+    '<div class="card-handle" title="' + esc(t('dragToSort')) + '">⠿</div>' +
     '<div class="card-actions">' +
-      '<button class="card-action-btn edit" data-action="edit" data-id="' + esc(ws.id) + '" title="편집">✎</button>' +
-      '<button class="card-action-btn del" data-action="delete" data-id="' + esc(ws.id) + '" title="삭제">✕</button>' +
+      '<button class="card-action-btn edit" data-action="edit" data-id="' + esc(ws.id) + '" title="' + esc(t('editBtn')) + '">✎</button>' +
+      '<button class="card-action-btn del" data-action="delete" data-id="' + esc(ws.id) + '" title="' + esc(t('deleteBtn')) + '">✕</button>' +
     '</div>' +
     badge +
     '<div class="card-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
@@ -198,18 +209,18 @@ function renderCard(ws, idx) {
 function renderFolderSection(folder, items, startIdx) {
   var html = '<div class="folder-section" data-folder-id="' + esc(folder.id) + '">' +
     '<div class="folder-header" draggable="true" data-folder-drag-id="' + esc(folder.id) + '">' +
-      '<div class="folder-drag-handle" title="드래그하여 순서 변경">⠿</div>' +
+      '<div class="folder-drag-handle" title="' + esc(t('dragToReorder')) + '">⠿</div>' +
       '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '📁') + '</span>' + esc(folder.name) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
       '<div class="folder-actions">' +
-        '<button class="folder-btn" data-action="edit-folder" data-id="' + esc(folder.id) + '" title="편집">✎</button>' +
-        '<button class="folder-btn del" data-action="delete-folder" data-id="' + esc(folder.id) + '" title="삭제">✕</button>' +
+        '<button class="folder-btn" data-action="edit-folder" data-id="' + esc(folder.id) + '" title="' + esc(t('editBtn')) + '">✎</button>' +
+        '<button class="folder-btn del" data-action="delete-folder" data-id="' + esc(folder.id) + '" title="' + esc(t('deleteBtn')) + '">✕</button>' +
       '</div>' +
     '</div>' +
     '<div class="folder-grid grid">';
 
   if (items.length === 0) {
-    html += '<div class="folder-empty">워크스페이스를 이 폴더로 드래그하세요</div>';
+    html += '<div class="folder-empty">' + esc(t('dragToFolder')) + '</div>';
   } else {
     items.forEach(function (ws, i) { html += renderCard(ws, startIdx + i); });
   }
@@ -221,7 +232,7 @@ function renderFolderSection(folder, items, startIdx) {
 function renderUnfiledSection(items, startIdx) {
   var html = '<div class="folder-section" data-folder-id="">' +
     '<div class="folder-header">' +
-      '<div class="folder-title"><span class="ft-emoji">📋</span>미분류</div>' +
+      '<div class="folder-title"><span class="ft-emoji">📋</span>' + esc(t('uncategorized')) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
     '</div>' +
     '<div class="folder-grid grid">';
@@ -235,7 +246,7 @@ function renderUnfiledSection(items, startIdx) {
 function renderAddCard() {
   return '<div class="card card-add" data-action="add-ws">' +
     '<div class="card-add-icon">＋</div>' +
-    '<div class="card-add-text">워크스페이스 추가</div>' +
+    '<div class="card-add-text">' + esc(t('addWorkspace')) + '</div>' +
   '</div>';
 }
 
@@ -502,8 +513,8 @@ function onGlobalKey(e) {
 // ── Workspace Modal ──
 function openWsModal(ws) {
   editingWsId = ws ? ws.id : null;
-  document.getElementById('modal-title').textContent = ws ? '워크스페이스 편집' : '워크스페이스 추가';
-  document.getElementById('m-save').textContent = ws ? '수정' : '저장';
+  document.getElementById('modal-title').textContent = ws ? t('editWorkspace') : t('addWorkspace');
+  document.getElementById('m-save').textContent = ws ? t('edit') : t('save');
 
   document.getElementById('m-emoji').value = ws ? (ws.emoji || '') : '';
   document.getElementById('m-name').value = ws ? ws.name : '';
@@ -511,7 +522,7 @@ function openWsModal(ws) {
   buildSwatches(document.getElementById('m-colors'), ws && ws.colorId != null ? ws.colorId : null);
 
   var select = document.getElementById('m-folder');
-  var optionsHtml = '<option value="">📋 미분류</option>';
+  var optionsHtml = '<option value="">📋 ' + esc(t('uncategorized')) + '</option>';
   folders.forEach(function (f) {
     var sel = ws && ws.folderId === f.id ? ' selected' : '';
     optionsHtml += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '📁') + ' ' + esc(f.name) + '</option>';
@@ -580,8 +591,8 @@ async function saveWs() {
 // ── Folder Modal ──
 function openFolderModal(folder) {
   editingFolderId = folder ? folder.id : null;
-  document.getElementById('folder-modal-title').textContent = folder ? '폴더 편집' : '폴더 추가';
-  document.getElementById('fm-save').textContent = folder ? '수정' : '저장';
+  document.getElementById('folder-modal-title').textContent = folder ? t('folderEdit') : t('folderAdd');
+  document.getElementById('fm-save').textContent = folder ? t('edit') : t('save');
 
   document.getElementById('fm-emoji').value = folder ? (folder.emoji || '') : '';
   document.getElementById('fm-name').value = folder ? folder.name : '';

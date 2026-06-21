@@ -1,0 +1,248 @@
+{
+  "extName": {
+    "message": "Notion Workspace Switcher"
+  },
+  "extDescription": {
+    "message": "Notion 워크스페이스를 빠르게 전환하세요"
+  },
+  "commandPopup": {
+    "message": "Notion Switcher 팝업 열기"
+  },
+  "commandDashboard": {
+    "message": "Notion 대시보드 열기"
+  },
+  "dashboard": {
+    "message": "대시보드 ↗"
+  },
+  "settings": {
+    "message": "설정"
+  },
+  "searchPlaceholder": {
+    "message": "검색 또는 숫자(1~9)로 바로 이동"
+  },
+  "searchPlaceholderDash": {
+    "message": "워크스페이스 검색... (숫자 1~9로 바로 이동)"
+  },
+  "workspaceName": {
+    "message": "워크스페이스 이름"
+  },
+  "uncategorized": {
+    "message": "미분류"
+  },
+  "newFolderName": {
+    "message": "새 폴더 이름"
+  },
+  "add": {
+    "message": "추가"
+  },
+  "cancel": {
+    "message": "취소"
+  },
+  "save": {
+    "message": "저장"
+  },
+  "edit": {
+    "message": "수정"
+  },
+  "addWorkspace": {
+    "message": "워크스페이스 추가"
+  },
+  "editWorkspace": {
+    "message": "워크스페이스 편집"
+  },
+  "kbdHint": {
+    "message": "숫자 1~9 바로 이동 · Enter 첫 번째 결과 · Shift+클릭 새 탭"
+  },
+  "countSuffix": {
+    "message": "$COUNT$개",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "countWorkspaces": {
+    "message": "$COUNT$개 워크스페이스",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "newFolderOption": {
+    "message": "＋ 새 폴더..."
+  },
+  "emptyNoWorkspaces": {
+    "message": "워크스페이스가 없습니다"
+  },
+  "emptyNoResults": {
+    "message": "검색 결과 없음"
+  },
+  "emptyAddHint": {
+    "message": "아래 + 버튼으로 추가해보세요"
+  },
+  "emptyAddHintDash": {
+    "message": "상단 + 추가 버튼으로 Notion 워크스페이스를 등록해보세요."
+  },
+  "emptySearchHint": {
+    "message": "다른 키워드로 검색해보세요"
+  },
+  "addHere": {
+    "message": "여기에 추가"
+  },
+  "dragToSort": {
+    "message": "드래그하여 정렬"
+  },
+  "dragToReorder": {
+    "message": "드래그하여 순서 변경"
+  },
+  "editBtn": {
+    "message": "편집"
+  },
+  "newTab": {
+    "message": "새 탭"
+  },
+  "deleteBtn": {
+    "message": "삭제"
+  },
+  "folderAdd": {
+    "message": "폴더 추가"
+  },
+  "folderEdit": {
+    "message": "폴더 편집"
+  },
+  "folderName": {
+    "message": "폴더 이름"
+  },
+  "folderBtn": {
+    "message": "📁 폴더"
+  },
+  "addBtn": {
+    "message": "＋ 추가"
+  },
+  "dragToFolder": {
+    "message": "워크스페이스를 이 폴더로 드래그하세요"
+  },
+  "auto": {
+    "message": "자동"
+  },
+  "close": {
+    "message": "닫기"
+  },
+  "settingsTitle": {
+    "message": "설정"
+  },
+  "theme": {
+    "message": "테마"
+  },
+  "themeSystem": {
+    "message": "시스템"
+  },
+  "themeLight": {
+    "message": "라이트"
+  },
+  "themeDark": {
+    "message": "다크"
+  },
+  "shortcuts": {
+    "message": "단축키"
+  },
+  "scPopup": {
+    "message": "팝업 열기"
+  },
+  "scDashboard": {
+    "message": "대시보드 열기"
+  },
+  "scFocusSearch": {
+    "message": "검색창 포커스"
+  },
+  "scPopupToDash": {
+    "message": "팝업 → 대시보드"
+  },
+  "scGlobalChrome": {
+    "message": "전역 · Chrome 관리"
+  },
+  "scScopeDashboard": {
+    "message": "대시보드"
+  },
+  "scScopePopup": {
+    "message": "팝업"
+  },
+  "scopeGlobal": {
+    "message": "전역"
+  },
+  "scopeInApp": {
+    "message": "앱 내"
+  },
+  "change": {
+    "message": "변경"
+  },
+  "recordingKey": {
+    "message": "키 입력… (Esc 취소)"
+  },
+  "recordingRetry": {
+    "message": "다시 입력… (Esc 취소)"
+  },
+  "conflictReserved": {
+    "message": "기본 키($KEY$)와 충돌",
+    "placeholders": {
+      "key": { "content": "$1" }
+    }
+  },
+  "conflictShortcut": {
+    "message": "\"$LABEL$\"와 충돌",
+    "placeholders": {
+      "label": { "content": "$1" }
+    }
+  },
+  "chromeShortcuts": {
+    "message": "Chrome 단축키 설정 열기 ↗"
+  },
+  "chromeShortcutsNote": {
+    "message": "전역 단축키(팝업·대시보드 열기)는 브라우저가 관리해요. 다른 프로그램과 겹치면 위 버튼으로 변경할 수 있어요."
+  },
+  "tipTitle": {
+    "message": "기획자 응원하기"
+  },
+  "tipDesc": {
+    "message": "커피 한 잔의 응원이 큰 힘이 돼요!"
+  },
+  "tipToss": {
+    "message": "토스"
+  },
+  "tipKakao": {
+    "message": "카카오페이"
+  },
+  "tipQrHint": {
+    "message": "스마트폰 카메라로 QR을 스캔하세요"
+  },
+  "tipAccount": {
+    "message": "토스뱅크 100032602565"
+  },
+  "copy": {
+    "message": "복사"
+  },
+  "copied": {
+    "message": "복사됨!"
+  },
+  "feedbackTitle": {
+    "message": "피드백 보내기"
+  },
+  "feedbackDesc": {
+    "message": "버그 제보, 기능 제안, 무엇이든 환영해요"
+  },
+  "feedbackBtn": {
+    "message": "피드백 작성하기 ↗"
+  },
+  "dashFooter1": {
+    "message": "바로 이동"
+  },
+  "dashFooter2": {
+    "message": "첫 번째 결과"
+  },
+  "dashFooter3": {
+    "message": "검색 포커스"
+  },
+  "dashFooter4": {
+    "message": "팝업"
+  },
+  "dashFooter5": {
+    "message": "이 페이지"
+  }
+}

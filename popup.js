@@ -41,12 +41,12 @@ async function saveFolders(list) {
 
 function populateFolderSelect(selectedFolderId) {
   var select = document.getElementById('f-folder');
-  var html = '<option value="">📋 미분류</option>';
+  var html = '<option value="">📋 ' + esc(t('uncategorized')) + '</option>';
   folders.forEach(function (f) {
     var sel = selectedFolderId === f.id ? ' selected' : '';
     html += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '📁') + ' ' + esc(f.name) + '</option>';
   });
-  html += '<option value="__new__">＋ 새 폴더...</option>';
+  html += '<option value="__new__">' + esc(t('newFolderOption')) + '</option>';
   select.innerHTML = html;
   document.getElementById('new-folder-row').style.display = 'none';
 }
@@ -89,6 +89,7 @@ async function init() {
     currentTabUrl = tabs[0].url || '';
   } catch (e) {}
 
+  localizeHtml();
   renderList();
   updateCount();
 
@@ -110,7 +111,7 @@ function openDashboard() {
 }
 
 function updateCount() {
-  document.getElementById('ws-count').textContent = workspaces.length > 0 ? workspaces.length + '개' : '';
+  document.getElementById('ws-count').textContent = workspaces.length > 0 ? t('countSuffix', [String(workspaces.length)]) : '';
 }
 
 function renderItem(ws, idx) {
@@ -125,8 +126,8 @@ function renderItem(ws, idx) {
     ' data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-idx="' + idx + '"' +
     ' data-folder="' + esc(ws.folderId || '') + '">' +
     '<div class="ws-gutter">' +
-      '<button class="g-btn g-add" data-action="add" data-folder="' + esc(ws.folderId || '') + '" title="여기에 추가" tabindex="-1">＋</button>' +
-      '<span class="g-btn g-handle" draggable="true" title="드래그하여 정렬" tabindex="-1">⠿</span>' +
+      '<button class="g-btn g-add" data-action="add" data-folder="' + esc(ws.folderId || '') + '" title="' + esc(t('addHere')) + '" tabindex="-1">＋</button>' +
+      '<span class="g-btn g-handle" draggable="true" title="' + esc(t('dragToSort')) + '" tabindex="-1">⠿</span>' +
     '</div>' +
     '<div class="ws-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
     '<div class="ws-info">' +
@@ -135,9 +136,9 @@ function renderItem(ws, idx) {
     '</div>' +
     '<div class="ws-meta">' +
       '<div class="ws-actions">' +
-        '<button class="btn-sm edit" data-action="edit" data-id="' + esc(ws.id) + '" title="편집" tabindex="-1">✎</button>' +
-        '<button class="btn-sm" data-action="newtab" data-url="' + esc(ws.url) + '" title="새 탭" tabindex="-1">↗</button>' +
-        '<button class="btn-sm del" data-action="delete" data-id="' + esc(ws.id) + '" title="삭제" tabindex="-1">✕</button>' +
+        '<button class="btn-sm edit" data-action="edit" data-id="' + esc(ws.id) + '" title="' + esc(t('editBtn')) + '" tabindex="-1">✎</button>' +
+        '<button class="btn-sm" data-action="newtab" data-url="' + esc(ws.url) + '" title="' + esc(t('newTab')) + '" tabindex="-1">↗</button>' +
+        '<button class="btn-sm del" data-action="delete" data-id="' + esc(ws.id) + '" title="' + esc(t('deleteBtn')) + '" tabindex="-1">✕</button>' +
       '</div>' +
       badge +
     '</div>' +
@@ -154,8 +155,8 @@ function renderList() {
     var isEmpty = workspaces.length === 0;
     list.innerHTML =
       '<div class="empty">' +
-        (isEmpty ? '워크스페이스가 없습니다' : '검색 결과 없음') +
-        (isEmpty ? '<div class="empty-sub">아래 + 버튼으로 추가해보세요</div>' : '') +
+        (isEmpty ? esc(t('emptyNoWorkspaces')) : esc(t('emptyNoResults'))) +
+        (isEmpty ? '<div class="empty-sub">' + esc(t('emptyAddHint')) + '</div>' : '') +
       '</div>';
     return;
   }
@@ -196,7 +197,7 @@ function renderList() {
       });
 
       if (unfiled.length > 0) {
-        html += '<div class="folder-label"><span class="fl-emoji">📋</span>미분류</div>';
+        html += '<div class="folder-label"><span class="fl-emoji">📋</span>' + esc(t('uncategorized')) + '</div>';
         unfiled.forEach(function (ws) {
           displayOrder.push(ws);
           html += renderItem(ws, idx);
@@ -298,7 +299,7 @@ function startEdit(id) {
   document.getElementById('f-name').value = ws.name;
   document.getElementById('f-url').value = ws.url;
   buildSwatches(document.getElementById('f-colors'), ws.colorId != null ? ws.colorId : null);
-  document.getElementById('btn-save').textContent = '수정';
+  document.getElementById('btn-save').textContent = t('edit');
   populateFolderSelect(ws.folderId);
   addForm.classList.add('open');
   document.getElementById('f-name').focus();
@@ -359,7 +360,7 @@ var addForm = document.getElementById('add-form');
 function openAddForm(folderId) {
   editingId = null;
   clearForm();
-  document.getElementById('btn-save').textContent = '저장';
+  document.getElementById('btn-save').textContent = t('save');
   populateFolderSelect(folderId || null);
   buildSwatches(document.getElementById('f-colors'), null);
   addForm.classList.add('open');
@@ -383,7 +384,7 @@ document.getElementById('btn-add').addEventListener('click', function () {
 
 document.getElementById('btn-cancel').addEventListener('click', function () {
   editingId = null;
-  document.getElementById('btn-save').textContent = '저장';
+  document.getElementById('btn-save').textContent = t('save');
   addForm.classList.remove('open');
   clearForm();
 });
@@ -395,7 +396,7 @@ document.getElementById('btn-save').addEventListener('click', saveForm);
     if (e.key === 'Enter') saveForm();
     if (e.key === 'Escape') {
       editingId = null;
-      document.getElementById('btn-save').textContent = '저장';
+      document.getElementById('btn-save').textContent = t('save');
       addForm.classList.remove('open');
       clearForm();
     }
@@ -440,7 +441,7 @@ async function saveForm() {
   await saveWorkspaces(workspaces);
 
   editingId = null;
-  document.getElementById('btn-save').textContent = '저장';
+  document.getElementById('btn-save').textContent = t('save');
   addForm.classList.remove('open');
   clearForm();
   applyFilter();

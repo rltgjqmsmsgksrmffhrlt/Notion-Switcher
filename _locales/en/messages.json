@@ -1,0 +1,248 @@
+{
+  "extName": {
+    "message": "Notion Workspace Switcher"
+  },
+  "extDescription": {
+    "message": "Quickly switch between Notion workspaces"
+  },
+  "commandPopup": {
+    "message": "Open Notion Switcher popup"
+  },
+  "commandDashboard": {
+    "message": "Open Notion dashboard"
+  },
+  "dashboard": {
+    "message": "Dashboard ↗"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "searchPlaceholder": {
+    "message": "Search or press 1-9 to jump"
+  },
+  "searchPlaceholderDash": {
+    "message": "Search workspaces... (press 1-9 to jump)"
+  },
+  "workspaceName": {
+    "message": "Workspace name"
+  },
+  "uncategorized": {
+    "message": "Uncategorized"
+  },
+  "newFolderName": {
+    "message": "New folder name"
+  },
+  "add": {
+    "message": "Add"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "edit": {
+    "message": "Edit"
+  },
+  "addWorkspace": {
+    "message": "Add Workspace"
+  },
+  "editWorkspace": {
+    "message": "Edit Workspace"
+  },
+  "kbdHint": {
+    "message": "Press 1-9 to jump · Enter first result · Shift+click new tab"
+  },
+  "countSuffix": {
+    "message": "$COUNT$",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "countWorkspaces": {
+    "message": "$COUNT$ workspaces",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "newFolderOption": {
+    "message": "+ New folder..."
+  },
+  "emptyNoWorkspaces": {
+    "message": "No workspaces yet"
+  },
+  "emptyNoResults": {
+    "message": "No results found"
+  },
+  "emptyAddHint": {
+    "message": "Add one with the + button below"
+  },
+  "emptyAddHintDash": {
+    "message": "Register your Notion workspaces using the + Add button above."
+  },
+  "emptySearchHint": {
+    "message": "Try a different keyword"
+  },
+  "addHere": {
+    "message": "Add here"
+  },
+  "dragToSort": {
+    "message": "Drag to reorder"
+  },
+  "dragToReorder": {
+    "message": "Drag to reorder"
+  },
+  "editBtn": {
+    "message": "Edit"
+  },
+  "newTab": {
+    "message": "New tab"
+  },
+  "deleteBtn": {
+    "message": "Delete"
+  },
+  "folderAdd": {
+    "message": "Add Folder"
+  },
+  "folderEdit": {
+    "message": "Edit Folder"
+  },
+  "folderName": {
+    "message": "Folder name"
+  },
+  "folderBtn": {
+    "message": "📁 Folder"
+  },
+  "addBtn": {
+    "message": "+ Add"
+  },
+  "dragToFolder": {
+    "message": "Drag workspaces to this folder"
+  },
+  "auto": {
+    "message": "Auto"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "settingsTitle": {
+    "message": "Settings"
+  },
+  "theme": {
+    "message": "Theme"
+  },
+  "themeSystem": {
+    "message": "System"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
+  "shortcuts": {
+    "message": "Shortcuts"
+  },
+  "scPopup": {
+    "message": "Open popup"
+  },
+  "scDashboard": {
+    "message": "Open dashboard"
+  },
+  "scFocusSearch": {
+    "message": "Focus search"
+  },
+  "scPopupToDash": {
+    "message": "Popup → Dashboard"
+  },
+  "scGlobalChrome": {
+    "message": "Global · Chrome managed"
+  },
+  "scScopeDashboard": {
+    "message": "Dashboard"
+  },
+  "scScopePopup": {
+    "message": "Popup"
+  },
+  "scopeGlobal": {
+    "message": "Global"
+  },
+  "scopeInApp": {
+    "message": "In-app"
+  },
+  "change": {
+    "message": "Change"
+  },
+  "recordingKey": {
+    "message": "Press a key… (Esc to cancel)"
+  },
+  "recordingRetry": {
+    "message": "Try again… (Esc to cancel)"
+  },
+  "conflictReserved": {
+    "message": "Conflicts with reserved key ($KEY$)",
+    "placeholders": {
+      "key": { "content": "$1" }
+    }
+  },
+  "conflictShortcut": {
+    "message": "Conflicts with \"$LABEL$\"",
+    "placeholders": {
+      "label": { "content": "$1" }
+    }
+  },
+  "chromeShortcuts": {
+    "message": "Open Chrome shortcut settings ↗"
+  },
+  "chromeShortcutsNote": {
+    "message": "Global shortcuts (open popup/dashboard) are managed by the browser. Use the button above to change them if they conflict with other apps."
+  },
+  "tipTitle": {
+    "message": "Support the creator"
+  },
+  "tipDesc": {
+    "message": "A cup of coffee means a lot!"
+  },
+  "tipToss": {
+    "message": "Toss"
+  },
+  "tipKakao": {
+    "message": "KakaoPay"
+  },
+  "tipQrHint": {
+    "message": "Scan the QR code with your phone camera"
+  },
+  "tipAccount": {
+    "message": "Toss Bank 100032602565"
+  },
+  "copy": {
+    "message": "Copy"
+  },
+  "copied": {
+    "message": "Copied!"
+  },
+  "feedbackTitle": {
+    "message": "Send Feedback"
+  },
+  "feedbackDesc": {
+    "message": "Bug reports, feature requests — anything is welcome"
+  },
+  "feedbackBtn": {
+    "message": "Write Feedback ↗"
+  },
+  "dashFooter1": {
+    "message": "Jump to"
+  },
+  "dashFooter2": {
+    "message": "First result"
+  },
+  "dashFooter3": {
+    "message": "Focus search"
+  },
+  "dashFooter4": {
+    "message": "Popup"
+  },
+  "dashFooter5": {
+    "message": "This page"
+  }
+}
