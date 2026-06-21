@@ -1,5 +1,7 @@
 # Notion Switcher
 
+[한국어](README.ko.md) | English
+
 > Quickly switch between Notion workspaces with a single click or keyboard shortcut.
 
 Notion Switcher is a Chrome extension that lets you jump between Notion workspaces in under 2 seconds. No more digging through sidebars — just press `Alt+N` and go.
