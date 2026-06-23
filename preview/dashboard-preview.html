@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="../icons/icon16.svg">
 <title>Notion Switcher</title>
 <link rel="stylesheet" href="../styles/tokens.css">
 <link rel="stylesheet" href="../styles/components.css">
@@ -29,11 +30,7 @@ body {
 }
 .logo {
   width: 36px; height: 36px;
-  background: var(--tile-red-bg);
-  color: var(--tile-red-fg);
-  border-radius: var(--r-md);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 800;
+  object-fit: contain;
 }
 .title { font-size: var(--t-title); font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
 .ws-total {
@@ -341,7 +338,7 @@ body {
 
 <div class="page">
   <div class="header">
-    <div class="logo">N</div>
+    <img class="logo" src="../icons/icon48.png" alt="Notion Switcher">
     <h1 class="title">Notion Switcher</h1>
     <span class="ws-total" id="ws-total"></span>
   </div>

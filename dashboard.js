@@ -1,5 +1,25 @@
 'use strict';
 
+(function fallingCubes() {
+  var container = document.getElementById('falling-cubes');
+  if (!container) return;
+  var COUNT = 12;
+  for (var i = 0; i < COUNT; i++) {
+    var cube = document.createElement('div');
+    cube.className = 'falling-cube';
+    var size = 16 + Math.random() * 20;
+    var left = Math.random() * 100;
+    var duration = 10 + Math.random() * 18;
+    var delay = -(Math.random() * duration);
+    cube.style.width = size + 'px';
+    cube.style.height = size + 'px';
+    cube.style.left = left + '%';
+    cube.style.animationDuration = duration + 's';
+    cube.style.animationDelay = delay + 's';
+    container.appendChild(cube);
+  }
+})();
+
 function getInitial(name) {
   if (!name) return '?';
   const first = [...name][0];

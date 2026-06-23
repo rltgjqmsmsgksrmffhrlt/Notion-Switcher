@@ -1,38 +1,47 @@
-# Notion Switcher
+<p align="center">
+  <img src="icons/icon128.png" alt="Notion Switcher" width="96">
+</p>
 
-[한국어](README.ko.md) | English
+<h1 align="center">Notion Switcher</h1>
 
-> Quickly switch between Notion workspaces with a single click or keyboard shortcut.
+<p align="center">
+  <strong>Every switch opens your next possibility.</strong><br>
+  <sub>Switching workspaces isn't just navigation — it's stepping into your next idea.</sub>
+</p>
 
-Notion Switcher is a Chrome extension that lets you jump between Notion workspaces in under 2 seconds. No more digging through sidebars — just press `Alt+N` and go.
+<p align="center">
+  <a href="README.ko.md">한국어</a> · English
+</p>
+
+---
+
+Notion Switcher is a Chrome extension that lets you jump between Notion workspaces in under 2 seconds. Press `Alt+N`, hit a number key, and you're there.
+
+Each workspace holds a different project, a different role, a different dream. We believe faster switching means more time creating — and that's where real change begins.
 
 ---
 
 ## Features
 
-### Workspace Management
-- **Add / Edit / Delete** workspaces with name, URL, emoji, and color
-- **Folders** — organize workspaces into groups
-- **Search** — real-time filtering by name, URL, or emoji
-- **Drag & Drop** — reorder workspaces and move between folders
-
-### Quick Switch
-- Press `1`~`9` to jump to a workspace instantly
+### Instant Switch
+- Press `1`~`9` to jump to any workspace
 - `Enter` opens the first search result
 - `Shift+click` opens in a new tab
+- Real-time search by name, URL, or emoji
 
 ### Two Views
-- **Popup** (`Alt+N`) — compact 320px panel for fast switching
-- **Dashboard** (`Alt+Shift+N`) — full-page grid for managing all workspaces
+- **Popup** (`Alt+N`) — compact 320px panel for quick switching
+- **Dashboard** (`Alt+Shift+N`) — full-page grid with falling cube animations
 
-### Settings
+### Organization
+- **Folders** — group workspaces by topic
+- **Drag & Drop** — reorder freely, move between folders
+- **Add / Edit / Delete** with name, URL, emoji, and color
+
+### Personalization
 - **Theme** — System / Light / Dark
-- **Custom shortcuts** — remap in-app keyboard shortcuts with conflict detection
-- **Feedback** — built-in Tally form for bug reports and feature requests
-
-### Internationalization
-- Auto-switches between **Korean** and **English** based on browser language
-- All UI strings are localized via Chrome i18n API
+- **Custom shortcuts** — remap keyboard shortcuts with conflict detection
+- **i18n** — auto Korean/English based on browser language
 
 ---
 
@@ -52,14 +61,14 @@ Notion Switcher is a Chrome extension that lets you jump between Notion workspac
 
 ## Install
 
+### Chrome Web Store
+Coming soon.
+
 ### From source (Developer mode)
 1. Go to `chrome://extensions`
 2. Enable **Developer mode**
 3. Click **Load unpacked**
 4. Select the `notion-switcher` folder
-
-### Chrome Web Store
-Coming soon.
 
 ---
 
@@ -69,49 +78,25 @@ Coming soon.
 |---|---|
 | Platform | Chrome Extension (Manifest V3) |
 | Language | Vanilla JavaScript |
-| Storage | chrome.storage.sync (cross-device sync) |
+| Storage | chrome.storage.sync |
 | Styling | CSS Custom Properties |
-| i18n | Chrome i18n API (`_locales/`) |
-| Build | None (no bundler) |
+| i18n | Chrome i18n API |
+| Build | None (zero bundler) |
 
 ---
 
-## File Structure
+## Privacy
 
-```
-notion-switcher/
-├── manifest.json          # Extension config
-├── background.js          # Service worker
-├── popup.html / popup.js  # Popup UI
-├── dashboard.html / dashboard.js  # Dashboard UI
-├── ui.js                  # Shared UI helpers
-├── settings.js            # Settings panel
-├── i18n.js                # i18n helper
-├── theme-init.js          # Early theme application
-├── styles/
-│   ├── tokens.css         # Design tokens
-│   └── components.css     # Shared component styles
-├── icons/                 # Extension icons + QR images
-├── _locales/
-│   ├── ko/messages.json   # Korean
-│   └── en/messages.json   # English
-└── PRD.md                 # Product Requirements Document
-```
-
----
-
-## Permissions
-
-| Permission | Usage |
-|------------|-------|
-| `storage` | Save workspaces, folders, and settings (synced across devices) |
-| `tabs` | Detect active tab URL + open workspaces in new tabs |
+- **No data collection** — everything stays in your browser
+- No analytics, no tracking, no account required
+- Uses Chrome's built-in sync only
+- [Privacy Policy](PRIVACY.md)
 
 ---
 
 ## Feedback
 
-Bug reports and feature requests: [Feedback Form](https://tally.so/r/9qxE61)
+Bug reports & feature requests → [Feedback Form](https://tally.so/r/9qxE61)
 
 ---
 
