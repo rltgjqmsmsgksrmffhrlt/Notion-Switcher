@@ -113,6 +113,21 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   border: 2px solid var(--paper);
 }
 
+/* ── Filter bar ──────────────────────────── */
+.filter-bar { display: flex; gap: 4px; padding: 0 10px 6px; overflow-x: auto; scrollbar-width: none; }
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-bar:empty { display: none; }
+.filter-pill {
+  flex: none; padding: 3px 10px; border-radius: 12px;
+  border: 1px solid var(--line-2); background: var(--paper);
+  color: var(--ink-3); font-size: 11px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: all 0.12s;
+  font-family: var(--font);
+}
+.filter-pill:hover { background: var(--hover); }
+.filter-pill.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* ── Folder section ─────────────────────── */
 .folder-label {
   display: flex;
   align-items: center;
@@ -122,8 +137,15 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   font-weight: 600;
   color: var(--ink-3);
   letter-spacing: 0.01em;
+  cursor: pointer;
+  user-select: none;
 }
+.folder-label:hover { color: var(--ink-2); }
 .folder-label .fl-emoji { font-size: 12px; filter: saturate(0.85); }
+.fl-count { font-size: 10px; color: var(--ink-4); font-weight: 500; }
+.fl-chevron { margin-left: auto; font-size: 10px; color: var(--ink-4); transition: transform 0.15s; }
+.folder-section.collapsed .fl-chevron { transform: rotate(-90deg); }
+.folder-section.collapsed .folder-items { display: none; }
 
 /* ── Row ──────────────────────────────────── */
 .workspace-item {
@@ -379,6 +401,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   <input class="search-input" id="search" type="text" data-i18n-placeholder="searchPlaceholder" autocomplete="off" spellcheck="false">
 </div>
 
+<div class="filter-bar" id="filter-bar"></div>
 <div class="workspace-list" id="ws-list"></div>
 
 <div class="add-form" id="add-form">

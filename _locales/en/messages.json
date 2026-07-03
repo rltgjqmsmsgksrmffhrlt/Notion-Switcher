@@ -29,6 +29,12 @@
   "uncategorized": {
     "message": "Uncategorized"
   },
+  "filterAll": {
+    "message": "All"
+  },
+  "expirySort": {
+    "message": "Expiry"
+  },
   "newFolderName": {
     "message": "New folder name"
   },

@@ -236,6 +236,20 @@ body {
 .card-add-icon { font-size: 26px; line-height: 1; }
 .card-add-text { font-size: 13px; font-weight: 500; }
 
+/* ── Filter bar ── */
+.filter-bar { display: flex; gap: 6px; padding: 0 0 16px; overflow-x: auto; scrollbar-width: none; }
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-bar:empty { display: none; }
+.filter-pill {
+  flex: none; padding: 5px 14px; border-radius: 14px;
+  border: 1px solid var(--line-2); background: var(--paper);
+  color: var(--ink-3); font-size: 12px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: all 0.12s;
+  font-family: var(--font);
+}
+.filter-pill:hover { background: var(--hover); }
+.filter-pill.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
 /* ── Folder ── */
 .folder-section { margin-bottom: 28px; border-radius: var(--r-lg); transition: background 0.15s; }
 .folder-section.drag-over { background: var(--accent-soft); padding: 6px; }
@@ -254,7 +268,11 @@ body {
   padding: 1px 8px; border-radius: 20px; font-weight: 500;
 }
 .folder-actions { display: none; gap: 2px; margin-left: 2px; }
+.folder-header { cursor: pointer; user-select: none; }
 .folder-header:hover .folder-actions { display: flex; }
+.fl-chevron { font-size: 11px; color: var(--ink-4); transition: transform 0.15s; margin-left: 2px; }
+.folder-section.collapsed .fl-chevron { transform: rotate(-90deg); }
+.folder-section.collapsed .folder-grid { display: none; }
 .folder-btn {
   width: 24px; height: 24px;
   background: transparent; border: none;
@@ -410,6 +428,7 @@ body {
     <button class="btn-primary" id="btn-add" data-i18n="addBtn"></button>
   </div>
 
+  <div class="filter-bar" id="filter-bar"></div>
   <div id="content"></div>
 
   <div class="footer" id="dash-footer"></div>

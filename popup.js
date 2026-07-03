@@ -126,6 +126,8 @@ var currentTabUrl = '';
 var editingId = null;
 var dragId = null;
 var appSettings = {};
+var collapsedFolders = {};
+var activeFilter = null;
 
 async function init() {
   var results = await Promise.all([loadWorkspaces(), loadFolders(), loadSettings()]);
@@ -144,7 +146,13 @@ async function init() {
     currentTabUrl = tabs[0].url || '';
   } catch (e) {}
 
+  try {
+    var stored = await new Promise(function (r) { chrome.storage.local.get(['collapsedFolders'], function (d) { r(d); }); });
+    collapsedFolders = stored.collapsedFolders || {};
+  } catch (e) {}
+
   localizeHtml();
+  renderFilterBar();
   renderList();
   updateCount();
 
@@ -175,7 +183,7 @@ function renderItem(ws, idx) {
     ? '<span>' + esc(ws.emoji) + '</span>'
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
   var isActive = currentTabUrl && ws.url && currentTabUrl.startsWith(ws.url.split('?')[0]);
-  var badge = idx < 9 ? '<div class="ws-badge">' + (idx + 1) + '</div>' : '';
+  var badge = (idx >= 0 && idx < 9) ? '<div class="ws-badge">' + (idx + 1) + '</div>' : '';
   var days = remainingDays(ws.expireAt);
   var expireBadge = days !== null
     ? '<span class="expire-badge">' + (days === 0 ? esc(t('expiresToday')) : esc(t('expiresIn', [String(days)]))) + '</span>'
@@ -205,6 +213,7 @@ function renderItem(ws, idx) {
 }
 
 function renderList() {
+  renderFilterBar();
   var list = document.getElementById('ws-list');
   var isSearching = document.getElementById('search').value.trim().length > 0;
 
@@ -220,7 +229,7 @@ function renderList() {
     return;
   }
 
-  if (isSearching || folders.length === 0) {
+  if (isSearching || activeFilter || folders.length === 0) {
     displayOrder = filtered.slice();
     list.innerHTML = displayOrder.map(function (ws, i) { return renderItem(ws, i); }).join('');
   } else {
@@ -247,21 +256,37 @@ function renderList() {
       folders.forEach(function (folder) {
         var items = grouped[folder.id] || [];
         if (items.length === 0) return;
-        html += '<div class="folder-label"><span class="fl-emoji">' + (folder.emoji || '📁') + '</span>' + esc(folder.name) + '</div>';
+        var col = collapsedFolders[folder.id];
+        html += '<div class="folder-section' + (col ? ' collapsed' : '') + '">';
+        html += '<div class="folder-label" data-folder-toggle="' + esc(folder.id) + '"><span class="fl-emoji">' + (folder.emoji || '📁') + '</span>' + esc(folder.name) + '<span class="fl-count">' + items.length + '</span><span class="fl-chevron">▾</span></div>';
+        html += '<div class="folder-items">';
         items.forEach(function (ws) {
-          displayOrder.push(ws);
-          html += renderItem(ws, idx);
-          idx++;
+          if (col) {
+            html += renderItem(ws, -1);
+          } else {
+            displayOrder.push(ws);
+            html += renderItem(ws, idx);
+            idx++;
+          }
         });
+        html += '</div></div>';
       });
 
       if (unfiled.length > 0 && !appSettings.hideUncategorized) {
-        html += '<div class="folder-label"><span class="fl-emoji">📋</span>' + esc(t('uncategorized')) + '</div>';
+        var uCol = collapsedFolders['__unfiled__'];
+        html += '<div class="folder-section' + (uCol ? ' collapsed' : '') + '">';
+        html += '<div class="folder-label" data-folder-toggle="__unfiled__"><span class="fl-emoji">📋</span>' + esc(t('uncategorized')) + '<span class="fl-count">' + unfiled.length + '</span><span class="fl-chevron">▾</span></div>';
+        html += '<div class="folder-items">';
         unfiled.forEach(function (ws) {
-          displayOrder.push(ws);
-          html += renderItem(ws, idx);
-          idx++;
+          if (uCol) {
+            html += renderItem(ws, -1);
+          } else {
+            displayOrder.push(ws);
+            html += renderItem(ws, idx);
+            idx++;
+          }
         });
+        html += '</div></div>';
       }
 
       list.innerHTML = html;
@@ -271,7 +296,16 @@ function renderList() {
   list.querySelectorAll('.workspace-item').forEach(function (el) {
     el.addEventListener('click', onItemClick);
   });
-  if (!isSearching) bindDrag(list);
+  list.querySelectorAll('[data-folder-toggle]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var fid = el.dataset.folderToggle;
+      collapsedFolders[fid] = !collapsedFolders[fid];
+      if (!collapsedFolders[fid]) delete collapsedFolders[fid];
+      chrome.storage.local.set({ collapsedFolders: collapsedFolders });
+      renderList();
+    });
+  });
+  if (!isSearching && !activeFilter) bindDrag(list);
 }
 
 // ── Drag to reorder ──
@@ -414,14 +448,47 @@ function onSearchKey(e) {
 
 function applyFilter() {
   var q = document.getElementById('search').value.toLowerCase().trim();
-  filtered = q
-    ? workspaces.filter(function (w) {
-        return w.name.toLowerCase().includes(q) ||
-               w.url.toLowerCase().includes(q) ||
-               (w.emoji && w.emoji.includes(q));
-      })
-    : workspaces.slice();
+  filtered = workspaces.filter(function (w) {
+    if (q && !(w.name.toLowerCase().includes(q) || w.url.toLowerCase().includes(q) || (w.emoji && w.emoji.includes(q)))) return false;
+    if (activeFilter && activeFilter !== '__expiry__') {
+      if (activeFilter === '__unfiled__') return !w.folderId || !folders.some(function (f) { return f.id === w.folderId; });
+      return w.folderId === activeFilter;
+    }
+    return true;
+  });
+  if (activeFilter === '__expiry__') {
+    filtered.sort(function (a, b) {
+      var ra = a.expireAt ? (a.expireAt - Date.now()) : Infinity;
+      var rb = b.expireAt ? (b.expireAt - Date.now()) : Infinity;
+      if (ra === Infinity && rb === Infinity) return 0;
+      if (ra === Infinity) return 1;
+      if (rb === Infinity) return -1;
+      return rb - ra;
+    });
+  }
   renderList();
+}
+
+function renderFilterBar() {
+  var bar = document.getElementById('filter-bar');
+  var hasTemp = workspaces.some(function (w) { return w.expireAt; });
+  if (folders.length === 0 && !hasTemp) { bar.innerHTML = ''; return; }
+  var html = '<button class="filter-pill' + (!activeFilter ? ' active' : '') + '" data-filter="">' + esc(t('filterAll')) + '</button>';
+  folders.forEach(function (f) {
+    html += '<button class="filter-pill' + (activeFilter === f.id ? ' active' : '') + '" data-filter="' + esc(f.id) + '">' +
+      (f.emoji || '📁') + ' ' + esc(f.name) + '</button>';
+  });
+  if (hasTemp) {
+    html += '<button class="filter-pill' + (activeFilter === '__expiry__' ? ' active' : '') + '" data-filter="__expiry__">⏳ ' + esc(t('expirySort')) + '</button>';
+  }
+  bar.innerHTML = html;
+  bar.onclick = function (e) {
+    var pill = e.target.closest('.filter-pill');
+    if (!pill) return;
+    activeFilter = pill.dataset.filter || null;
+    renderFilterBar();
+    applyFilter();
+  };
 }
 
 // ── Add / Edit Form ──

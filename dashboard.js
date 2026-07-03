@@ -111,6 +111,8 @@ var editingWsId = null;
 var editingFolderId = null;
 var draggingFolderId = null;
 var appSettings = {};
+var collapsedFolders = {};
+var activeFilter = null;
 
 async function init() {
   var results = await Promise.all([loadWorkspaces(), loadFolders(), loadSettings()]);
@@ -123,7 +125,14 @@ async function init() {
   if (workspaces.length < before) await saveWorkspaces(workspaces);
 
   filtered = workspaces.slice();
+
+  try {
+    var stored = await new Promise(function (r) { chrome.storage.local.get(['collapsedFolders'], function (d) { r(d); }); });
+    collapsedFolders = stored.collapsedFolders || {};
+  } catch (e) {}
+
   localizeHtml();
+  renderFilterBar();
   renderFooter();
   render();
   updateTotal();
@@ -210,6 +219,7 @@ function updateTotal() {
 
 // ── Render ──
 function render() {
+  renderFilterBar();
   var content = document.getElementById('content');
   var isSearching = document.getElementById('search').value.trim().length > 0;
 
@@ -237,11 +247,11 @@ function render() {
 
   var html = '';
 
-  if (isSearching || folders.length === 0) {
+  if (isSearching || activeFilter || folders.length === 0) {
     displayOrder = filtered.slice();
     html = '<div class="grid">';
     displayOrder.forEach(function (ws, i) { html += renderCard(ws, i); });
-    if (!isSearching) html += renderAddCard();
+    if (!isSearching && !activeFilter) html += renderAddCard();
     html += '</div>';
   } else {
     var grouped = {};
@@ -257,22 +267,24 @@ function render() {
 
     folders.forEach(function (f) {
       var items = grouped[f.id] || [];
-      displayOrder = displayOrder.concat(items);
+      if (!collapsedFolders[f.id]) displayOrder = displayOrder.concat(items);
     });
-    displayOrder = displayOrder.concat(unfiled);
+    if (!collapsedFolders['__unfiled__']) displayOrder = displayOrder.concat(unfiled);
 
     var idx = 0;
     folders.forEach(function (folder) {
       var items = grouped[folder.id] || [];
-      html += renderFolderSection(folder, items, idx);
-      idx += items.length;
+      var col = collapsedFolders[folder.id];
+      html += renderFolderSection(folder, items, col ? -1 : idx);
+      if (!col) idx += items.length;
     });
-    html += renderUnfiledSection(unfiled, idx);
+    html += renderUnfiledSection(unfiled, collapsedFolders['__unfiled__'] ? -1 : idx);
   }
 
   content.innerHTML = html;
   bindCardEvents();
-  if (!isSearching && folders.length > 0) bindDragDrop();
+  bindFolderToggle();
+  if (!isSearching && !activeFilter && folders.length > 0) bindDragDrop();
 }
 
 function renderCard(ws, idx) {
@@ -280,7 +292,7 @@ function renderCard(ws, idx) {
   var icon = ws.emoji
     ? '<span class="emoji">' + esc(ws.emoji) + '</span>'
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
-  var badge = idx < 9 ? '<div class="card-badge">' + (idx + 1) + '</div>' : '';
+  var badge = (idx >= 0 && idx < 9) ? '<div class="card-badge">' + (idx + 1) + '</div>' : '';
 
   var days = remainingDays(ws.expireAt);
   var expireBadge = days !== null
@@ -302,11 +314,13 @@ function renderCard(ws, idx) {
 }
 
 function renderFolderSection(folder, items, startIdx) {
-  var html = '<div class="folder-section" data-folder-id="' + esc(folder.id) + '">' +
-    '<div class="folder-header" draggable="true" data-folder-drag-id="' + esc(folder.id) + '">' +
+  var col = collapsedFolders[folder.id];
+  var html = '<div class="folder-section' + (col ? ' collapsed' : '') + '" data-folder-id="' + esc(folder.id) + '">' +
+    '<div class="folder-header" draggable="true" data-folder-drag-id="' + esc(folder.id) + '" data-folder-toggle="' + esc(folder.id) + '">' +
       '<div class="folder-drag-handle" title="' + esc(t('dragToReorder')) + '">⠿</div>' +
       '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '📁') + '</span>' + esc(folder.name) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
+      '<span class="fl-chevron">▾</span>' +
       '<div class="folder-actions">' +
         '<button class="folder-btn" data-action="edit-folder" data-id="' + esc(folder.id) + '" title="' + esc(t('editBtn')) + '">✎</button>' +
         '<button class="folder-btn del" data-action="delete-folder" data-id="' + esc(folder.id) + '" title="' + esc(t('deleteBtn')) + '">✕</button>' +
@@ -317,7 +331,7 @@ function renderFolderSection(folder, items, startIdx) {
   if (items.length === 0) {
     html += '<div class="folder-empty">' + esc(t('dragToFolder')) + '</div>';
   } else {
-    items.forEach(function (ws, i) { html += renderCard(ws, startIdx + i); });
+    items.forEach(function (ws, i) { html += renderCard(ws, startIdx >= 0 ? startIdx + i : -1); });
   }
 
   html += '</div></div>';
@@ -327,14 +341,16 @@ function renderFolderSection(folder, items, startIdx) {
 function renderUnfiledSection(items, startIdx) {
   if (appSettings.hideUncategorized) return '';
 
-  var html = '<div class="folder-section" data-folder-id="">' +
-    '<div class="folder-header">' +
+  var uCol = collapsedFolders['__unfiled__'];
+  var html = '<div class="folder-section' + (uCol ? ' collapsed' : '') + '" data-folder-id="">' +
+    '<div class="folder-header" data-folder-toggle="__unfiled__">' +
       '<div class="folder-title"><span class="ft-emoji">📋</span>' + esc(t('uncategorized')) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
+      '<span class="fl-chevron">▾</span>' +
     '</div>' +
     '<div class="folder-grid grid">';
 
-  items.forEach(function (ws, i) { html += renderCard(ws, startIdx + i); });
+  items.forEach(function (ws, i) { html += renderCard(ws, startIdx >= 0 ? startIdx + i : -1); });
   html += renderAddCard();
   html += '</div></div>';
   return html;
@@ -553,14 +569,60 @@ function onSearch() { applyFilter(); }
 
 function applyFilter() {
   var q = document.getElementById('search').value.toLowerCase().trim();
-  filtered = q
-    ? workspaces.filter(function (w) {
-        return w.name.toLowerCase().includes(q) ||
-               w.url.toLowerCase().includes(q) ||
-               (w.emoji && w.emoji.includes(q));
-      })
-    : workspaces.slice();
+  filtered = workspaces.filter(function (w) {
+    if (q && !(w.name.toLowerCase().includes(q) || w.url.toLowerCase().includes(q) || (w.emoji && w.emoji.includes(q)))) return false;
+    if (activeFilter && activeFilter !== '__expiry__') {
+      if (activeFilter === '__unfiled__') return !w.folderId || !folders.some(function (f) { return f.id === w.folderId; });
+      return w.folderId === activeFilter;
+    }
+    return true;
+  });
+  if (activeFilter === '__expiry__') {
+    filtered.sort(function (a, b) {
+      var ra = a.expireAt ? (a.expireAt - Date.now()) : Infinity;
+      var rb = b.expireAt ? (b.expireAt - Date.now()) : Infinity;
+      if (ra === Infinity && rb === Infinity) return 0;
+      if (ra === Infinity) return 1;
+      if (rb === Infinity) return -1;
+      return rb - ra;
+    });
+  }
   render();
+}
+
+function renderFilterBar() {
+  var bar = document.getElementById('filter-bar');
+  var hasTemp = workspaces.some(function (w) { return w.expireAt; });
+  if (folders.length === 0 && !hasTemp) { bar.innerHTML = ''; return; }
+  var html = '<button class="filter-pill' + (!activeFilter ? ' active' : '') + '" data-filter="">' + esc(t('filterAll')) + '</button>';
+  folders.forEach(function (f) {
+    html += '<button class="filter-pill' + (activeFilter === f.id ? ' active' : '') + '" data-filter="' + esc(f.id) + '">' +
+      (f.emoji || '📁') + ' ' + esc(f.name) + '</button>';
+  });
+  if (hasTemp) {
+    html += '<button class="filter-pill' + (activeFilter === '__expiry__' ? ' active' : '') + '" data-filter="__expiry__">⏳ ' + esc(t('expirySort')) + '</button>';
+  }
+  bar.innerHTML = html;
+  bar.onclick = function (e) {
+    var pill = e.target.closest('.filter-pill');
+    if (!pill) return;
+    activeFilter = pill.dataset.filter || null;
+    renderFilterBar();
+    applyFilter();
+  };
+}
+
+function bindFolderToggle() {
+  document.querySelectorAll('[data-folder-toggle]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      if (e.target.closest('.folder-actions') || e.target.closest('.folder-drag-handle')) return;
+      var fid = el.dataset.folderToggle;
+      collapsedFolders[fid] = !collapsedFolders[fid];
+      if (!collapsedFolders[fid]) delete collapsedFolders[fid];
+      chrome.storage.local.set({ collapsedFolders: collapsedFolders });
+      render();
+    });
+  });
 }
 
 // ── Global Keys ──

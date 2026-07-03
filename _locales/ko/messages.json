@@ -29,6 +29,12 @@
   "uncategorized": {
     "message": "미분류"
   },
+  "filterAll": {
+    "message": "전체"
+  },
+  "expirySort": {
+    "message": "만료순"
+  },
   "newFolderName": {
     "message": "새 폴더 이름"
   },
