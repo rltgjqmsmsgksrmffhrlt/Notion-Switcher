@@ -70,6 +70,54 @@ function smartOpen(url) {
   window.close();
 }
 
+function loadSettings() {
+  return new Promise(function (r) { chrome.storage.sync.get(['settings'], function (d) { r(d.settings || {}); }); });
+}
+function saveSettings(s) {
+  return new Promise(function (r) { chrome.storage.sync.set({ settings: s }, r); });
+}
+
+function purgeExpired(list) {
+  var now = Date.now();
+  return list.filter(function (w) { return !w.expireAt || w.expireAt > now; });
+}
+
+function remainingDays(expireAt) {
+  if (!expireAt) return null;
+  var diff = expireAt - Date.now();
+  return Math.max(0, Math.ceil(diff / 86400000));
+}
+
+var RANDOM_ADJ = [
+  '저멀리','반짝이는','달리는','춤추는','잠자는','날아가는','노래하는','꿈꾸는',
+  '용감한','수줍은','신비로운','귀여운','느긋한','따뜻한','조용한','새벽의',
+  '한밤의','구름위','바다건너','숲속의','빛나는','씩씩한','배고픈','졸린'
+];
+var RANDOM_NOUN = [
+  '하와이','고양이','펭귄','우주선','바다','구름','별빛','무지개',
+  '여우','토끼','커피','나비','오로라','돌고래','판다','코알라',
+  '해바라기','북극곰','달팽이','불꽃','아이슬란드','라면','선인장','부엉이'
+];
+
+function randomName() {
+  var a = RANDOM_ADJ[Math.floor(Math.random() * RANDOM_ADJ.length)];
+  var n = RANDOM_NOUN[Math.floor(Math.random() * RANDOM_NOUN.length)];
+  return a + ' ' + n;
+}
+
+function autoName(url) {
+  try {
+    var u = new URL(url);
+    var path = u.pathname.replace(/^\//, '').replace(/-/g, ' ').replace(/\/$/, '');
+    if (path) {
+      var segments = path.split('/');
+      var last = segments[segments.length - 1].replace(/[a-f0-9]{32}$/i, '').replace(/-+$/, '').trim();
+      if (last) return last.charAt(0).toUpperCase() + last.slice(1);
+    }
+  } catch (e) {}
+  return randomName();
+}
+
 var workspaces = [];
 var folders = [];
 var filtered = [];
@@ -77,11 +125,18 @@ var displayOrder = [];
 var currentTabUrl = '';
 var editingId = null;
 var dragId = null;
+var appSettings = {};
 
 async function init() {
-  var results = await Promise.all([loadWorkspaces(), loadFolders()]);
+  var results = await Promise.all([loadWorkspaces(), loadFolders(), loadSettings()]);
   workspaces = results[0];
   folders = results[1];
+  appSettings = results[2];
+
+  var before = workspaces.length;
+  workspaces = purgeExpired(workspaces);
+  if (workspaces.length < before) await saveWorkspaces(workspaces);
+
   filtered = workspaces.slice();
 
   try {
@@ -121,6 +176,10 @@ function renderItem(ws, idx) {
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
   var isActive = currentTabUrl && ws.url && currentTabUrl.startsWith(ws.url.split('?')[0]);
   var badge = idx < 9 ? '<div class="ws-badge">' + (idx + 1) + '</div>' : '';
+  var days = remainingDays(ws.expireAt);
+  var expireBadge = days !== null
+    ? '<span class="expire-badge">' + (days === 0 ? esc(t('expiresToday')) : esc(t('expiresIn', [String(days)]))) + '</span>'
+    : '';
 
   return '<div class="workspace-item' + (isActive ? ' active-ws' : '') + '"' +
     ' data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-idx="' + idx + '"' +
@@ -131,7 +190,7 @@ function renderItem(ws, idx) {
     '</div>' +
     '<div class="ws-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
     '<div class="ws-info">' +
-      '<div class="ws-name">' + esc(ws.name) + '</div>' +
+      '<div class="ws-name">' + esc(ws.name) + expireBadge + '</div>' +
       '<div class="ws-url">' + esc(shortUrl(ws.url)) + '</div>' +
     '</div>' +
     '<div class="ws-meta">' +
@@ -196,7 +255,7 @@ function renderList() {
         });
       });
 
-      if (unfiled.length > 0) {
+      if (unfiled.length > 0 && !appSettings.hideUncategorized) {
         html += '<div class="folder-label"><span class="fl-emoji">📋</span>' + esc(t('uncategorized')) + '</div>';
         unfiled.forEach(function (ws) {
           displayOrder.push(ws);
@@ -301,6 +360,17 @@ function startEdit(id) {
   buildSwatches(document.getElementById('f-colors'), ws.colorId != null ? ws.colorId : null);
   document.getElementById('btn-save').textContent = t('edit');
   populateFolderSelect(ws.folderId);
+
+  if (ws.expireAt) {
+    var days = remainingDays(ws.expireAt);
+    document.getElementById('f-expire').value = 'custom';
+    document.getElementById('custom-days-row').style.display = 'flex';
+    document.getElementById('f-custom-days').value = days > 0 ? days : 1;
+  } else {
+    document.getElementById('f-expire').value = '';
+    document.getElementById('custom-days-row').style.display = 'none';
+  }
+
   addForm.classList.add('open');
   document.getElementById('f-name').focus();
 }
@@ -365,11 +435,11 @@ function openAddForm(folderId) {
   buildSwatches(document.getElementById('f-colors'), null);
   addForm.classList.add('open');
 
-  if (currentTabUrl.includes('notion.so')) {
-    var urlInput = document.getElementById('f-url');
+  var urlInput = document.getElementById('f-url');
+  if (currentTabUrl.includes('notion.so') || currentTabUrl.includes('notion.com')) {
     if (!urlInput.value) urlInput.value = currentTabUrl.split('?')[0];
   }
-  document.getElementById('f-name').focus();
+  urlInput.focus();
 }
 
 document.getElementById('btn-add').addEventListener('click', function () {
@@ -408,22 +478,33 @@ async function saveForm() {
   var name  = document.getElementById('f-name').value.trim();
   var url   = document.getElementById('f-url').value.trim();
 
-  var ok = true;
-  var fName = document.getElementById('f-name');
   var fUrl  = document.getElementById('f-url');
-  fName.classList.remove('error');
   fUrl.classList.remove('error');
 
-  if (!name) { fName.classList.add('error'); fName.focus(); ok = false; }
-  if (!url)  { fUrl.classList.add('error');  if (ok) fUrl.focus(); ok = false; }
-  if (!ok) return;
+  if (!url)  { fUrl.classList.add('error'); fUrl.focus(); return; }
 
   if (!/^https?:\/\//.test(url)) url = 'https://' + url;
+
+  if (!name) name = autoName(url);
 
   var folderId = document.getElementById('f-folder').value || null;
   if (folderId === '__new__') folderId = null;
 
   var colorId = getSwatch(document.getElementById('f-colors'));
+
+  var expireVal = document.getElementById('f-expire').value;
+  var expireAt = null;
+  if (expireVal === 'custom') {
+    var customDays = parseInt(document.getElementById('f-custom-days').value);
+    if (!customDays || customDays < 1) {
+      document.getElementById('f-custom-days').classList.add('error');
+      document.getElementById('f-custom-days').focus();
+      return;
+    }
+    expireAt = Date.now() + customDays * 86400000;
+  } else if (expireVal) {
+    expireAt = Date.now() + parseInt(expireVal) * 86400000;
+  }
 
   if (editingId) {
     var ws = workspaces.find(function (w) { return w.id === editingId; });
@@ -433,9 +514,10 @@ async function saveForm() {
       ws.emoji = emoji || null;
       ws.folderId = folderId;
       ws.colorId = colorId;
+      ws.expireAt = expireAt;
     }
   } else {
-    workspaces.push({ id: Date.now().toString(), name: name, url: url, emoji: emoji || null, folderId: folderId, colorId: colorId });
+    workspaces.push({ id: Date.now().toString(), name: name, url: url, emoji: emoji || null, folderId: folderId, colorId: colorId, expireAt: expireAt });
   }
 
   await saveWorkspaces(workspaces);
@@ -454,6 +536,10 @@ function clearForm() {
     el.value = '';
     el.classList.remove('error');
   });
+  document.getElementById('f-expire').value = '';
+  document.getElementById('custom-days-row').style.display = 'none';
+  var customDays = document.getElementById('f-custom-days');
+  if (customDays) { customDays.value = ''; customDays.classList.remove('error'); }
   var folderEmoji = document.getElementById('f-folder-emoji');
   var folderName = document.getElementById('f-folder-name');
   if (folderEmoji) folderEmoji.value = '';
@@ -461,6 +547,21 @@ function clearForm() {
   var newFolderRow = document.getElementById('new-folder-row');
   if (newFolderRow) newFolderRow.style.display = 'none';
 }
+
+document.getElementById('f-expire').addEventListener('change', function () {
+  document.getElementById('custom-days-row').style.display = this.value === 'custom' ? 'flex' : 'none';
+  if (this.value === 'custom') document.getElementById('f-custom-days').focus();
+});
+
+document.getElementById('f-custom-days').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') { saveForm(); return; }
+  if (e.key === 'Escape') { editingId = null; addForm.classList.remove('open'); clearForm(); return; }
+  if (!e.ctrlKey && !e.metaKey && e.key.length === 1 && !/[0-9]/.test(e.key)) e.preventDefault();
+});
+document.getElementById('f-custom-days').addEventListener('paste', function (e) {
+  var text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!/^\d+$/.test(text)) e.preventDefault();
+});
 
 document.getElementById('f-folder').addEventListener('change', function () {
   if (this.value === '__new__') {

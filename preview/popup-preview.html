@@ -294,6 +294,18 @@ body {
   font-size: 13px; cursor: pointer;
 }
 .btn-cancel-form:hover { color: var(--ink); background: var(--hover); }
+.form-unit {
+  display: flex; align-items: center;
+  font-size: 12px; color: var(--ink-3);
+  padding-right: 4px; white-space: nowrap;
+}
+.expire-badge {
+  font-size: 10px; font-weight: 600;
+  color: #e67e22;
+  background: rgba(230,126,34,0.12);
+  padding: 1px 6px; border-radius: 10px;
+  margin-left: 4px; white-space: nowrap;
+}
 
 /* ── Footer ───────────────────────────────── */
 .footer { padding: 4px 8px 6px; }
@@ -349,6 +361,18 @@ body {
   <div class="swatch-row" id="f-colors"></div>
   <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
   <div class="form-row">
+    <select class="form-select" id="f-expire">
+      <option value="">영구</option>
+      <option value="1">1일</option>
+      <option value="7">1주일</option>
+      <option value="custom">직접 지정</option>
+    </select>
+  </div>
+  <div class="form-row" id="custom-days-row" style="display:none">
+    <input class="form-input" id="f-custom-days" type="number" min="1" max="365" placeholder="일수 입력">
+    <span class="form-unit">일</span>
+  </div>
+  <div class="form-row">
     <select class="form-select" id="f-folder">
       <option value="">📋 미분류</option>
     </select>
@@ -374,6 +398,7 @@ body {
 <div class="kbd-hint">숫자 <b>1~9</b> 바로 이동 · <b>Enter</b> 첫 번째 결과 · <b>Shift+클릭</b> 새 탭</div>
 
 <script src="../preview/chrome-mock.js"></script>
+<script src="../i18n.js"></script>
 <script src="../ui.js"></script>
 <script src="../settings.js"></script>
 <script src="../popup.js"></script>

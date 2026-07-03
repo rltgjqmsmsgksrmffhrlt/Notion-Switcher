@@ -85,7 +85,14 @@ window.Settings = (function () {
     return html + '</span>';
   }
 
-  var overlay = null, recording = null;
+  function loadAppSettings() {
+    return new Promise(function (r) { chrome.storage.sync.get(['settings'], function (d) { r(d.settings || {}); }); });
+  }
+  function saveAppSettings(s) {
+    return new Promise(function (r) { chrome.storage.sync.set({ settings: s }, r); });
+  }
+
+  var overlay = null, recording = null, appSettings = {};
 
   function close() {
     if (overlay) overlay.classList.remove('open');
@@ -125,12 +132,20 @@ window.Settings = (function () {
       '</div>';
     }).join('');
 
+    var hideChecked = appSettings.hideUncategorized ? ' checked' : '';
+
     overlay.querySelector('.set-panel').innerHTML =
       '<div class="set-title-row"><div class="set-title">' + t('settingsTitle') + '</div>' +
         '<button class="btn-icon" data-close="1" title="' + t('close') + '">✕</button></div>' +
       '<div class="set-section">' +
         '<div class="set-h">' + t('theme') + '</div>' +
         '<div class="seg" data-seg="theme">' + seg + '</div>' +
+      '</div>' +
+      '<div class="set-section">' +
+        '<label class="set-check-row">' +
+          '<span>' + t('hideUncategorized') + '</span>' +
+          '<input type="checkbox" id="chk-hide-uncat"' + hideChecked + '>' +
+        '</label>' +
       '</div>' +
       '<div class="set-section">' +
         '<div class="set-h">' + t('shortcuts') + '</div>' + rows +
@@ -206,6 +221,13 @@ window.Settings = (function () {
     overlay.querySelectorAll('[data-theme-opt]').forEach(function (b) {
       b.onclick = function () { Theme.set(b.dataset.themeOpt); render(); bind(); };
     });
+    var hideChk = overlay.querySelector('#chk-hide-uncat');
+    if (hideChk) {
+      hideChk.onchange = function () {
+        appSettings.hideUncategorized = hideChk.checked;
+        saveAppSettings(appSettings);
+      };
+    }
     overlay.querySelectorAll('[data-edit]').forEach(function (b) {
       b.onclick = function () {
         if (recording && recording.id === b.dataset.edit) { stopRecording(); render(); bind(); }
@@ -255,7 +277,7 @@ window.Settings = (function () {
     }
   }
 
-  function open() {
+  async function open() {
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.className = 'set-overlay';
@@ -263,6 +285,7 @@ window.Settings = (function () {
       document.body.appendChild(overlay);
       overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) close(); });
     }
+    appSettings = await loadAppSettings();
     render();
     bind();
     overlay.classList.add('open');

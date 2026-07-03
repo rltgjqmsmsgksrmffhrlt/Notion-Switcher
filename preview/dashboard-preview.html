@@ -380,6 +380,18 @@ body {
       <input class="modal-input" id="m-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
     </div>
     <div class="modal-row">
+      <select class="modal-select" id="m-expire">
+        <option value="">영구</option>
+        <option value="1">1일</option>
+        <option value="7">1주일</option>
+        <option value="custom">직접 지정</option>
+      </select>
+    </div>
+    <div class="modal-row" id="m-custom-days-row" style="display:none">
+      <input class="modal-input" id="m-custom-days" type="number" min="1" max="365" placeholder="일수 입력" style="flex:1">
+      <span style="display:flex;align-items:center;font-size:13px;color:var(--ink-3);padding:0 4px">일</span>
+    </div>
+    <div class="modal-row">
       <select class="modal-select" id="m-folder">
         <option value="">📋 미분류</option>
       </select>
@@ -407,6 +419,7 @@ body {
 </div>
 
 <script src="../preview/chrome-mock.js"></script>
+<script src="../i18n.js"></script>
 <script src="../ui.js"></script>
 <script src="../settings.js"></script>
 <script src="../dashboard.js"></script>

@@ -56,6 +56,52 @@ async function saveFolders(list) {
   return new Promise(function (r) { chrome.storage.sync.set({ folders: list }, r); });
 }
 
+function loadSettings() {
+  return new Promise(function (r) { chrome.storage.sync.get(['settings'], function (d) { r(d.settings || {}); }); });
+}
+function saveSettingsData(s) {
+  return new Promise(function (r) { chrome.storage.sync.set({ settings: s }, r); });
+}
+function purgeExpired(list) {
+  var now = Date.now();
+  return list.filter(function (w) { return !w.expireAt || w.expireAt > now; });
+}
+function remainingDays(expireAt) {
+  if (!expireAt) return null;
+  var diff = expireAt - Date.now();
+  return Math.max(0, Math.ceil(diff / 86400000));
+}
+
+var RANDOM_ADJ = [
+  '저멀리','반짝이는','달리는','춤추는','잠자는','날아가는','노래하는','꿈꾸는',
+  '용감한','수줍은','신비로운','귀여운','느긋한','따뜻한','조용한','새벽의',
+  '한밤의','구름위','바다건너','숲속의','빛나는','씩씩한','배고픈','졸린'
+];
+var RANDOM_NOUN = [
+  '하와이','고양이','펭귄','우주선','바다','구름','별빛','무지개',
+  '여우','토끼','커피','나비','오로라','돌고래','판다','코알라',
+  '해바라기','북극곰','달팽이','불꽃','아이슬란드','라면','선인장','부엉이'
+];
+
+function randomName() {
+  var a = RANDOM_ADJ[Math.floor(Math.random() * RANDOM_ADJ.length)];
+  var n = RANDOM_NOUN[Math.floor(Math.random() * RANDOM_NOUN.length)];
+  return a + ' ' + n;
+}
+
+function autoName(url) {
+  try {
+    var u = new URL(url);
+    var path = u.pathname.replace(/^\//, '').replace(/-/g, ' ').replace(/\/$/, '');
+    if (path) {
+      var segments = path.split('/');
+      var last = segments[segments.length - 1].replace(/[a-f0-9]{32}$/i, '').replace(/-+$/, '').trim();
+      if (last) return last.charAt(0).toUpperCase() + last.slice(1);
+    }
+  } catch (e) {}
+  return randomName();
+}
+
 // ── State ──
 var workspaces = [];
 var folders = [];
@@ -64,11 +110,18 @@ var displayOrder = [];
 var editingWsId = null;
 var editingFolderId = null;
 var draggingFolderId = null;
+var appSettings = {};
 
 async function init() {
-  var results = await Promise.all([loadWorkspaces(), loadFolders()]);
+  var results = await Promise.all([loadWorkspaces(), loadFolders(), loadSettings()]);
   workspaces = results[0];
   folders = results[1];
+  appSettings = results[2];
+
+  var before = workspaces.length;
+  workspaces = purgeExpired(workspaces);
+  if (workspaces.length < before) await saveWorkspaces(workspaces);
+
   filtered = workspaces.slice();
   localizeHtml();
   renderFooter();
@@ -87,6 +140,18 @@ async function init() {
   Settings.mount(document.getElementById('btn-settings'));
   CustomSelect.enhance(document.getElementById('m-folder'));
 
+  document.getElementById('m-expire').addEventListener('change', function () {
+    document.getElementById('m-custom-days-row').style.display = this.value === 'custom' ? 'flex' : 'none';
+    if (this.value === 'custom') document.getElementById('m-custom-days').focus();
+  });
+  document.getElementById('m-custom-days').addEventListener('keydown', function (e) {
+    if (!e.ctrlKey && !e.metaKey && e.key.length === 1 && !/[0-9]/.test(e.key)) e.preventDefault();
+  });
+  document.getElementById('m-custom-days').addEventListener('paste', function (e) {
+    var text = (e.clipboardData || window.clipboardData).getData('text');
+    if (!/^\d+$/.test(text)) e.preventDefault();
+  });
+
   document.addEventListener('keydown', onGlobalKey);
 
   document.getElementById('modal').addEventListener('click', function (e) {
@@ -96,7 +161,7 @@ async function init() {
     if (e.target === this) closeFolderModal();
   });
 
-  ['m-emoji', 'm-name', 'm-url'].forEach(function (id) {
+  ['m-emoji', 'm-name', 'm-url', 'm-custom-days'].forEach(function (id) {
     document.getElementById(id).addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); saveWs(); }
       if (e.key === 'Escape') { e.preventDefault(); closeWsModal(); }
@@ -120,6 +185,10 @@ async function init() {
     }
     if (changes.folders) {
       folders = changes.folders.newValue || [];
+      applyFilter();
+    }
+    if (changes.settings) {
+      appSettings = changes.settings.newValue || {};
       applyFilter();
     }
   });
@@ -213,6 +282,11 @@ function renderCard(ws, idx) {
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
   var badge = idx < 9 ? '<div class="card-badge">' + (idx + 1) + '</div>' : '';
 
+  var days = remainingDays(ws.expireAt);
+  var expireBadge = days !== null
+    ? '<div class="expire-badge">' + (days === 0 ? esc(t('expiresToday')) : esc(t('expiresIn', [String(days)]))) + '</div>'
+    : '';
+
   return '<div class="card" data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-folder="' + esc(ws.folderId || '') + '" draggable="true">' +
     '<div class="card-handle" title="' + esc(t('dragToSort')) + '">⠿</div>' +
     '<div class="card-actions">' +
@@ -222,6 +296,7 @@ function renderCard(ws, idx) {
     badge +
     '<div class="card-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
     '<div class="card-name">' + esc(ws.name) + '</div>' +
+    expireBadge +
     '<div class="card-url">' + esc(shortUrl(ws.url)) + '</div>' +
   '</div>';
 }
@@ -250,6 +325,8 @@ function renderFolderSection(folder, items, startIdx) {
 }
 
 function renderUnfiledSection(items, startIdx) {
+  if (appSettings.hideUncategorized) return '';
+
   var html = '<div class="folder-section" data-folder-id="">' +
     '<div class="folder-header">' +
       '<div class="folder-title"><span class="ft-emoji">📋</span>' + esc(t('uncategorized')) + '</div>' +
@@ -541,6 +618,17 @@ function openWsModal(ws) {
   document.getElementById('m-url').value = ws ? ws.url : '';
   buildSwatches(document.getElementById('m-colors'), ws && ws.colorId != null ? ws.colorId : null);
 
+  if (ws && ws.expireAt) {
+    var days = remainingDays(ws.expireAt);
+    document.getElementById('m-expire').value = 'custom';
+    document.getElementById('m-custom-days-row').style.display = 'flex';
+    document.getElementById('m-custom-days').value = days > 0 ? days : 1;
+  } else {
+    document.getElementById('m-expire').value = '';
+    document.getElementById('m-custom-days-row').style.display = 'none';
+    document.getElementById('m-custom-days').value = '';
+  }
+
   var select = document.getElementById('m-folder');
   var optionsHtml = '<option value="">📋 ' + esc(t('uncategorized')) + '</option>';
   folders.forEach(function (f) {
@@ -561,6 +649,9 @@ function closeWsModal() {
     el.value = '';
     el.classList.remove('error');
   });
+  document.getElementById('m-expire').value = '';
+  document.getElementById('m-custom-days-row').style.display = 'none';
+  document.getElementById('m-custom-days').value = '';
 }
 
 async function saveWs() {
@@ -570,17 +661,28 @@ async function saveWs() {
   var folderId = document.getElementById('m-folder').value || null;
   var colorId = getSwatch(document.getElementById('m-colors'));
 
-  var ok = true;
-  var fName = document.getElementById('m-name');
   var fUrl = document.getElementById('m-url');
-  fName.classList.remove('error');
   fUrl.classList.remove('error');
 
-  if (!name) { fName.classList.add('error'); fName.focus(); ok = false; }
-  if (!url) { fUrl.classList.add('error'); if (ok) fUrl.focus(); ok = false; }
-  if (!ok) return;
+  if (!url) { fUrl.classList.add('error'); fUrl.focus(); return; }
 
   if (!/^https?:\/\//.test(url)) url = 'https://' + url;
+
+  if (!name) name = autoName(url);
+
+  var expireVal = document.getElementById('m-expire').value;
+  var expireAt = null;
+  if (expireVal === 'custom') {
+    var customDays = parseInt(document.getElementById('m-custom-days').value);
+    if (!customDays || customDays < 1) {
+      document.getElementById('m-custom-days').classList.add('error');
+      document.getElementById('m-custom-days').focus();
+      return;
+    }
+    expireAt = Date.now() + customDays * 86400000;
+  } else if (expireVal) {
+    expireAt = Date.now() + parseInt(expireVal) * 86400000;
+  }
 
   if (editingWsId) {
     var ws = workspaces.find(function (w) { return w.id === editingWsId; });
@@ -590,6 +692,7 @@ async function saveWs() {
       ws.emoji = emoji || null;
       ws.folderId = folderId;
       ws.colorId = colorId;
+      ws.expireAt = expireAt;
     }
   } else {
     workspaces.push({
@@ -598,7 +701,8 @@ async function saveWs() {
       url: url,
       emoji: emoji || null,
       folderId: folderId,
-      colorId: colorId
+      colorId: colorId,
+      expireAt: expireAt
     });
   }
 

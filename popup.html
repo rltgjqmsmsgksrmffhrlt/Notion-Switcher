@@ -12,12 +12,20 @@ html { background: var(--paper); }
 
 body {
   width: 320px;
+  max-height: 600px;
+  overflow-y: auto;
   font-family: var(--font);
   font-size: var(--t-body);
   background: var(--paper);
   color: var(--ink);
   user-select: none;
   -webkit-font-smoothing: antialiased;
+}
+body::-webkit-scrollbar { width: 8px; }
+body::-webkit-scrollbar-track { background: transparent; }
+body::-webkit-scrollbar-thumb {
+  background: var(--line-2); border-radius: 4px;
+  border: 2px solid var(--paper);
 }
 
 /* ── Header ───────────────────────────────── */
@@ -89,6 +97,8 @@ body {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .search-input::placeholder { color: var(--ink-4); }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* ── List ─────────────────────────────────── */
 .workspace-list {
@@ -297,6 +307,33 @@ body {
   font-size: 13px; cursor: pointer;
 }
 .btn-cancel-form:hover { color: var(--ink); background: var(--hover); }
+.form-unit {
+  display: flex; align-items: center;
+  font-size: 12px; color: var(--ink-3);
+  padding-right: 4px; white-space: nowrap;
+}
+.expire-badge {
+  font-size: 10px; font-weight: 600;
+  color: var(--warning, #e67e22);
+  background: var(--warning-soft, rgba(230,126,34,0.12));
+  padding: 1px 6px; border-radius: 10px;
+  margin-left: 4px; white-space: nowrap;
+}
+.hide-uncat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; margin: 0 6px 4px;
+  border-radius: var(--r-sm);
+  font-size: 11px; color: var(--ink-3);
+}
+.hide-uncat-btn {
+  background: transparent; border: 1px solid var(--line-2);
+  border-radius: var(--r-sm); padding: 3px 8px;
+  font-size: 11px; color: var(--ink-3); cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.hide-uncat-btn:hover:not(:disabled) { background: var(--hover); color: var(--ink); border-color: var(--ink-4); }
+.hide-uncat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ── Footer ───────────────────────────────── */
 .footer { padding: 4px 8px 6px; }
@@ -345,12 +382,24 @@ body {
 <div class="workspace-list" id="ws-list"></div>
 
 <div class="add-form" id="add-form">
+  <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
   <div class="form-row">
     <input class="form-input emoji" id="f-emoji" type="text" placeholder="🏢" maxlength="2">
     <input class="form-input" id="f-name" type="text" data-i18n-placeholder="workspaceName">
   </div>
   <div class="swatch-row" id="f-colors"></div>
-  <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+  <div class="form-row">
+    <select class="form-select" id="f-expire">
+      <option value="" data-i18n="permanent"></option>
+      <option value="1" data-i18n="oneDay"></option>
+      <option value="7" data-i18n="oneWeek"></option>
+      <option value="custom" data-i18n="customDays"></option>
+    </select>
+  </div>
+  <div class="form-row" id="custom-days-row" style="display:none">
+    <input class="form-input" id="f-custom-days" type="number" min="1" max="365" data-i18n-placeholder="daysPlaceholder">
+    <span class="form-unit" data-i18n="daysUnit"></span>
+  </div>
   <div class="form-row">
     <select class="form-select" id="f-folder">
       <option value="" data-i18n="uncategorized"></option>

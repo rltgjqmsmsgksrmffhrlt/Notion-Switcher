@@ -10,7 +10,6 @@ window.TILES = [
   ['#fbf4dd', '#c29243'], // yellow
   ['#f2eefb', '#8a63c0'], // purple
   ['#fdecec', '#d24a4a'], // red
-  ['#f0eeeb', '#8a7b6b'], // brown
 ];
 
 window.hashTile = function (str) {

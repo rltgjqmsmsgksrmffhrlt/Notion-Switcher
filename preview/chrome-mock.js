@@ -11,6 +11,8 @@
       { id: '6', name: '회사 위키', url: 'https://www.notion.so/company-wiki', emoji: '🏢', folderId: null },
       { id: '7', name: '개인 노트', url: 'https://www.notion.so/personal-notes', emoji: '📓', folderId: null },
       { id: '8', name: '독서 기록', url: 'https://www.notion.so/reading-list', emoji: '📚', folderId: null },
+      { id: '9', name: '임시 회의록', url: 'https://www.notion.so/temp-meeting', emoji: '⏰', folderId: null, expireAt: Date.now() + 3 * 86400000 },
+      { id: '10', name: '오늘 만료 링크', url: 'https://www.notion.so/expiring-today', emoji: '⚠️', folderId: 'f2', expireAt: Date.now() + 12 * 3600000 },
     ],
     folders: [
       { id: 'f1', name: '프로덕트', emoji: '💼' },
@@ -52,7 +54,7 @@
     },
     tabs: {
       query: function (q, cb) {
-        var res = [{ id: 1, url: 'https://www.notion.so/product-planning', windowId: 1, active: true }];
+        var res = [{ id: 1, url: 'https://app.notion.com/product-planning', title: '제품 기획 — Notion', windowId: 1, active: true }];
         if (cb) { setTimeout(function () { cb(res); }, 0); return; }
         return Promise.resolve(res);
       },
@@ -61,5 +63,6 @@
     },
     windows: { update: function () { return Promise.resolve(); } },
     runtime: { getURL: function (p) { return p; } },
+    i18n: { getMessage: function (key) { return ''; } },
   };
 })();

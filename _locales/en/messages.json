@@ -24,7 +24,7 @@
     "message": "Search workspaces... (press 1-9 to jump)"
   },
   "workspaceName": {
-    "message": "Workspace name"
+    "message": "Name (random if empty)"
   },
   "uncategorized": {
     "message": "Uncategorized"
@@ -244,5 +244,47 @@
   },
   "dashFooter5": {
     "message": "This page"
+  },
+  "expiration": {
+    "message": "Expiration"
+  },
+  "permanent": {
+    "message": "Permanent"
+  },
+  "oneDay": {
+    "message": "1 Day"
+  },
+  "oneWeek": {
+    "message": "1 Week"
+  },
+  "customDays": {
+    "message": "Custom"
+  },
+  "daysUnit": {
+    "message": "days"
+  },
+  "daysPlaceholder": {
+    "message": "Enter days"
+  },
+  "expiresIn": {
+    "message": "D-$DAYS$",
+    "placeholders": {
+      "days": { "content": "$1" }
+    }
+  },
+  "expiresToday": {
+    "message": "Expires today"
+  },
+  "tempBadge": {
+    "message": "Temp"
+  },
+  "hideUncategorized": {
+    "message": "Hide uncategorized"
+  },
+  "hideUncategorizedDisabled": {
+    "message": "Move all links to folders first"
+  },
+  "showUncategorized": {
+    "message": "Show uncategorized"
   }
 }

@@ -24,7 +24,7 @@
     "message": "워크스페이스 검색... (숫자 1~9로 바로 이동)"
   },
   "workspaceName": {
-    "message": "워크스페이스 이름"
+    "message": "이름 (비우면 랜덤 생성)"
   },
   "uncategorized": {
     "message": "미분류"
@@ -244,5 +244,47 @@
   },
   "dashFooter5": {
     "message": "이 페이지"
+  },
+  "expiration": {
+    "message": "유효 기간"
+  },
+  "permanent": {
+    "message": "영구"
+  },
+  "oneDay": {
+    "message": "1일"
+  },
+  "oneWeek": {
+    "message": "1주일"
+  },
+  "customDays": {
+    "message": "직접 지정"
+  },
+  "daysUnit": {
+    "message": "일"
+  },
+  "daysPlaceholder": {
+    "message": "일수 입력"
+  },
+  "expiresIn": {
+    "message": "D-$DAYS$",
+    "placeholders": {
+      "days": { "content": "$1" }
+    }
+  },
+  "expiresToday": {
+    "message": "오늘 만료"
+  },
+  "tempBadge": {
+    "message": "임시"
+  },
+  "hideUncategorized": {
+    "message": "미분류 숨기기"
+  },
+  "hideUncategorizedDisabled": {
+    "message": "미분류에 링크가 있어 숨길 수 없습니다"
+  },
+  "showUncategorized": {
+    "message": "미분류 보기"
   }
 }

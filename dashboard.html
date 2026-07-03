@@ -285,6 +285,28 @@ body {
   border: 1.5px dashed var(--line-2);
   border-radius: var(--r-lg);
 }
+.expire-badge {
+  display: inline-block;
+  font-size: 10px; font-weight: 600;
+  color: var(--warning, #e67e22);
+  background: var(--warning-soft, rgba(230,126,34,0.12));
+  padding: 2px 7px; border-radius: 10px;
+  margin-top: 4px;
+}
+.hide-uncat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 6px; margin-bottom: 12px;
+}
+.hide-uncat-btn {
+  background: transparent; border: 1px solid var(--line-2);
+  border-radius: var(--r-md); padding: 6px 14px;
+  font-size: 12px; color: var(--ink-3); cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.hide-uncat-btn:hover:not(:disabled) { background: var(--hover); color: var(--ink); border-color: var(--ink-4); }
+.hide-uncat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.hide-uncat-hint { font-size: 11px; color: var(--ink-4); }
 
 /* ── Empty State ── */
 .empty-state { padding: 72px 20px; text-align: center; }
@@ -398,6 +420,9 @@ body {
   <div class="modal">
     <div class="modal-title" id="modal-title" data-i18n="addWorkspace"></div>
     <div class="modal-row">
+      <input class="modal-input" id="m-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+    </div>
+    <div class="modal-row">
       <input class="modal-input emoji" id="m-emoji" type="text" placeholder="🏢" maxlength="2">
       <input class="modal-input" id="m-name" type="text" data-i18n-placeholder="workspaceName">
     </div>
@@ -405,7 +430,16 @@ body {
       <div class="swatch-row" id="m-colors"></div>
     </div>
     <div class="modal-row">
-      <input class="modal-input" id="m-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+      <select class="modal-select" id="m-expire">
+        <option value="" data-i18n="permanent"></option>
+        <option value="1" data-i18n="oneDay"></option>
+        <option value="7" data-i18n="oneWeek"></option>
+        <option value="custom" data-i18n="customDays"></option>
+      </select>
+    </div>
+    <div class="modal-row" id="m-custom-days-row" style="display:none">
+      <input class="modal-input" id="m-custom-days" type="number" min="1" max="365" data-i18n-placeholder="daysPlaceholder" style="flex:1">
+      <span style="display:flex;align-items:center;font-size:13px;color:var(--ink-3);padding:0 4px" data-i18n="daysUnit"></span>
     </div>
     <div class="modal-row">
       <select class="modal-select" id="m-folder">
