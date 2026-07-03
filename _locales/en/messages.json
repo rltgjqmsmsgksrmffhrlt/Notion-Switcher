@@ -35,6 +35,15 @@
   "expirySort": {
     "message": "Expiry"
   },
+  "clearAll": {
+    "message": "Delete all workspaces"
+  },
+  "clearAllConfirm": {
+    "message": "All workspaces and folders\nwill be permanently deleted."
+  },
+  "clearAllYes": {
+    "message": "Delete"
+  },
   "newFolderName": {
     "message": "New folder name"
   },

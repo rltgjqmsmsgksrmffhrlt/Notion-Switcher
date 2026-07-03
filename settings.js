@@ -147,6 +147,9 @@ window.Settings = (function () {
           '<input type="checkbox" id="chk-hide-uncat"' + hideChecked + '>' +
         '</label>' +
       '</div>' +
+      '<div class="set-section" id="clear-section">' +
+        '<button class="sc-danger-btn" data-clear-all="1">' + t('clearAll') + '</button>' +
+      '</div>' +
       '<div class="set-section">' +
         '<div class="set-h">' + t('shortcuts') + '</div>' + rows +
       '</div>' +
@@ -226,6 +229,25 @@ window.Settings = (function () {
       hideChk.onchange = function () {
         appSettings.hideUncategorized = hideChk.checked;
         saveAppSettings(appSettings);
+      };
+    }
+    var clearBtn = overlay.querySelector('[data-clear-all]');
+    if (clearBtn) {
+      clearBtn.onclick = function () {
+        var sec = overlay.querySelector('#clear-section');
+        sec.innerHTML =
+          '<div class="clear-confirm">' +
+            '<div class="clear-confirm-icon">⚠️</div>' +
+            '<div class="clear-confirm-msg">' + t('clearAllConfirm') + '</div>' +
+            '<div class="clear-confirm-btns">' +
+              '<button class="clear-cancel-btn" data-clear-cancel="1">' + t('cancel') + '</button>' +
+              '<button class="clear-yes-btn" data-clear-yes="1">' + t('clearAllYes') + '</button>' +
+            '</div>' +
+          '</div>';
+        sec.querySelector('[data-clear-cancel]').onclick = function () { render(); bind(); };
+        sec.querySelector('[data-clear-yes]').onclick = function () {
+          chrome.storage.sync.set({ workspaces: [], folders: [] }, function () { location.reload(); });
+        };
       };
     }
     overlay.querySelectorAll('[data-edit]').forEach(function (b) {

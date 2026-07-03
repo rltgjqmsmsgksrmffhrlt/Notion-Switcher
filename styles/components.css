@@ -254,6 +254,38 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   transition: background 0.12s, border-color 0.12s;
 }
 .sc-chrome-btn:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+.sc-danger-btn {
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--danger, #e53e3e);
+  border-radius: var(--r-md);
+  font-size: 13px; font-weight: 500;
+  color: var(--danger, #e53e3e); cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.12s, color 0.12s;
+}
+.sc-danger-btn:hover { background: var(--danger, #e53e3e); color: #fff; }
+.clear-confirm {
+  text-align: center; padding: 16px 12px;
+  border: 1px solid var(--danger, #e53e3e); border-radius: var(--r-md);
+  background: var(--paper-2);
+}
+.clear-confirm-icon { font-size: 28px; margin-bottom: 8px; }
+.clear-confirm-msg { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin-bottom: 14px; white-space: pre-line; }
+.clear-confirm-btns { display: flex; gap: 8px; justify-content: center; }
+.clear-cancel-btn {
+  padding: 7px 18px; border: 1px solid var(--line-2); border-radius: var(--r-md);
+  background: var(--paper); color: var(--ink-2); font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: var(--font); transition: background 0.12s;
+}
+.clear-cancel-btn:hover { background: var(--hover); }
+.clear-yes-btn {
+  padding: 7px 18px; border: none; border-radius: var(--r-md);
+  background: var(--danger, #e53e3e); color: #fff; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); transition: filter 0.12s;
+}
+.clear-yes-btn:hover { filter: brightness(1.1); }
 
 .sc-note {
   margin-top: 10px; margin-bottom: 4px;

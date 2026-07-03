@@ -700,7 +700,7 @@ function openWsModal(ws) {
   select.innerHTML = optionsHtml;
 
   document.getElementById('modal').classList.add('open');
-  document.getElementById('m-name').focus();
+  document.getElementById('m-url').focus();
 }
 
 function closeWsModal() {

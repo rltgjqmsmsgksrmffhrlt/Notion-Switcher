@@ -35,6 +35,15 @@
   "expirySort": {
     "message": "만료순"
   },
+  "clearAll": {
+    "message": "전체 리스트 삭제"
+  },
+  "clearAllConfirm": {
+    "message": "모든 워크스페이스와 폴더가\n영구 삭제됩니다."
+  },
+  "clearAllYes": {
+    "message": "삭제"
+  },
   "newFolderName": {
     "message": "새 폴더 이름"
   },
