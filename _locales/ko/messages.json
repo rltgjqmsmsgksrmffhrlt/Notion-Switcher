@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Notion Workspace Switcher"
+    "message": "Notion Switcher"
   },
   "extDescription": {
     "message": "Notion 워크스페이스를 빠르게 전환하세요"
@@ -19,6 +19,15 @@
   },
   "searchPlaceholder": {
     "message": "검색 또는 숫자(1~9)로 바로 이동"
+  },
+  "addLink": {
+    "message": "링크 추가"
+  },
+  "moreOptions": {
+    "message": "▸ 상세 설정"
+  },
+  "lessOptions": {
+    "message": "▾ 접기"
   },
   "searchPlaceholderDash": {
     "message": "워크스페이스 검색... (숫자 1~9로 바로 이동)"
@@ -66,7 +75,7 @@
     "message": "워크스페이스 편집"
   },
   "kbdHint": {
-    "message": "숫자 1~9 바로 이동 · Enter 첫 번째 결과 · Shift+클릭 새 탭"
+    "message": "숫자 1~9 바로 이동"
   },
   "countSuffix": {
     "message": "$COUNT$개",
@@ -100,6 +109,9 @@
   },
   "addHere": {
     "message": "여기에 추가"
+  },
+  "addBelow": {
+    "message": "아래에 추가"
   },
   "dragToSort": {
     "message": "드래그하여 정렬"
@@ -301,5 +313,38 @@
   },
   "showUncategorized": {
     "message": "미분류 보기"
+  },
+  "obWelcomeTitle": {
+    "message": "처음이시죠? 같이 해봐요"
+  },
+  "obWelcomeDesc": {
+    "message": "30초면 충분해요. 핵심만 빠르게 알려드릴게요."
+  },
+  "obStart": {
+    "message": "시작할게요"
+  },
+  "obTip1": {
+    "message": "노션 링크를 추가해요"
+  },
+  "obTip2": {
+    "message": "폴더를 만들어 정리해요"
+  },
+  "obTip3": {
+    "message": "숫자키 1~9로 바로 이동"
+  },
+  "obTip4": {
+    "message": "설정 · 대시보드"
+  },
+  "obNext": {
+    "message": "다음"
+  },
+  "obSkip": {
+    "message": "건너뛰기"
+  },
+  "obDone": {
+    "message": "완료"
+  },
+  "obRestart": {
+    "message": "가이드 다시 보기"
   }
 }

@@ -3,19 +3,21 @@
 (function fallingCubes() {
   var container = document.getElementById('falling-cubes');
   if (!container) return;
-  var COUNT = 12;
+  var COUNT = 14;
   for (var i = 0; i < COUNT; i++) {
     var cube = document.createElement('div');
     cube.className = 'falling-cube';
-    var size = 16 + Math.random() * 20;
+    var isGiant = Math.random() < 0.15;
+    var size = isGiant ? 80 + Math.random() * 120 : 16 + Math.random() * 20;
     var left = Math.random() * 100;
-    var duration = 10 + Math.random() * 18;
+    var duration = isGiant ? 18 + Math.random() * 14 : 10 + Math.random() * 18;
     var delay = -(Math.random() * duration);
     cube.style.width = size + 'px';
     cube.style.height = size + 'px';
     cube.style.left = left + '%';
     cube.style.animationDuration = duration + 's';
     cube.style.animationDelay = delay + 's';
+    if (isGiant) cube.style.opacity = '0.06';
     container.appendChild(cube);
   }
 })();
@@ -87,6 +89,20 @@ function randomName() {
   var a = RANDOM_ADJ[Math.floor(Math.random() * RANDOM_ADJ.length)];
   var n = RANDOM_NOUN[Math.floor(Math.random() * RANDOM_NOUN.length)];
   return a + ' ' + n;
+}
+
+var RANDOM_EMOJI = [
+  '🚀','🌈','⭐','🔥','💎','🎯','📌','🏠','💡','🎨',
+  '🌍','🌙','☀️','⚡','🍀','🎵','📚','🧩','🎲','🏆',
+  '🦊','🐱','🐧','🦋','🐬','🐼','🦁','🐻','🦄','🐳',
+  '🍕','🍩','☕','🍎','🌸','🌻','🌴','🍄','💜','💙',
+  '👻','🤖','👾','🎃','🥸','🤡','🥳','😎','🫠','🤯',
+  '💩','🧠','👁‍🗨','🫧','🪄','🛸','🎪','🧸','🪅','🎭',
+  '🦑','🦖','🦩','🐸','🐙','🦔','🐝','🦜','🐢','🦀'
+];
+
+function randomEmoji() {
+  return RANDOM_EMOJI[Math.floor(Math.random() * RANDOM_EMOJI.length)];
 }
 
 function autoName(url) {
@@ -170,7 +186,7 @@ async function init() {
     if (e.target === this) closeFolderModal();
   });
 
-  ['m-emoji', 'm-name', 'm-url', 'm-custom-days'].forEach(function (id) {
+  ['m-name', 'm-url', 'm-custom-days'].forEach(function (id) {
     document.getElementById(id).addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); saveWs(); }
       if (e.key === 'Escape') { e.preventDefault(); closeWsModal(); }
@@ -179,11 +195,9 @@ async function init() {
   document.getElementById('m-folder').addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { e.preventDefault(); closeWsModal(); }
   });
-  ['fm-emoji', 'fm-name'].forEach(function (id) {
-    document.getElementById(id).addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); saveFolder(); }
-      if (e.key === 'Escape') { e.preventDefault(); closeFolderModal(); }
-    });
+  document.getElementById('fm-name').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); saveFolder(); }
+    if (e.key === 'Escape') { e.preventDefault(); closeFolderModal(); }
   });
 
   chrome.storage.onChanged.addListener(function (changes) {
@@ -284,6 +298,7 @@ function render() {
   content.innerHTML = html;
   bindCardEvents();
   bindFolderToggle();
+  bindEyeToggle();
   if (!isSearching && !activeFilter && folders.length > 0) bindDragDrop();
 }
 
@@ -339,20 +354,27 @@ function renderFolderSection(folder, items, startIdx) {
 }
 
 function renderUnfiledSection(items, startIdx) {
-  if (appSettings.hideUncategorized) return '';
+  var isHidden = appSettings.hideUncategorized;
+  var eyeIcon = isHidden ? '👁‍🗨' : '👁';
+  var eyeTitle = isHidden ? t('showUncategorized') : t('hideUncategorized');
 
   var uCol = collapsedFolders['__unfiled__'];
-  var html = '<div class="folder-section' + (uCol ? ' collapsed' : '') + '" data-folder-id="">' +
+  var html = '<div class="folder-section' + (uCol ? ' collapsed' : '') + (isHidden ? ' hidden-section' : '') + '" data-folder-id="">' +
     '<div class="folder-header" data-folder-toggle="__unfiled__">' +
       '<div class="folder-title"><span class="ft-emoji">📋</span>' + esc(t('uncategorized')) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
+      '<button class="btn-eye-toggle" data-toggle-uncat="1" title="' + esc(eyeTitle) + '">' + eyeIcon + '</button>' +
       '<span class="fl-chevron">▾</span>' +
-    '</div>' +
-    '<div class="folder-grid grid">';
+    '</div>';
 
-  items.forEach(function (ws, i) { html += renderCard(ws, startIdx >= 0 ? startIdx + i : -1); });
-  html += renderAddCard();
-  html += '</div></div>';
+  if (!isHidden) {
+    html += '<div class="folder-grid grid">';
+    items.forEach(function (ws, i) { html += renderCard(ws, startIdx >= 0 ? startIdx + i : -1); });
+    html += renderAddCard();
+    html += '</div>';
+  }
+
+  html += '</div>';
   return html;
 }
 
@@ -625,6 +647,17 @@ function bindFolderToggle() {
   });
 }
 
+function bindEyeToggle() {
+  document.querySelectorAll('[data-toggle-uncat]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      appSettings.hideUncategorized = !appSettings.hideUncategorized;
+      chrome.storage.sync.set({ settings: appSettings });
+      render();
+    });
+  });
+}
+
 // ── Global Keys ──
 function onGlobalKey(e) {
   var search = document.getElementById('search');
@@ -675,7 +708,6 @@ function openWsModal(ws) {
   document.getElementById('modal-title').textContent = ws ? t('editWorkspace') : t('addWorkspace');
   document.getElementById('m-save').textContent = ws ? t('edit') : t('save');
 
-  document.getElementById('m-emoji').value = ws ? (ws.emoji || '') : '';
   document.getElementById('m-name').value = ws ? ws.name : '';
   document.getElementById('m-url').value = ws ? ws.url : '';
   buildSwatches(document.getElementById('m-colors'), ws && ws.colorId != null ? ws.colorId : null);
@@ -706,7 +738,7 @@ function openWsModal(ws) {
 function closeWsModal() {
   document.getElementById('modal').classList.remove('open');
   editingWsId = null;
-  ['m-emoji', 'm-name', 'm-url'].forEach(function (id) {
+  ['m-name', 'm-url'].forEach(function (id) {
     var el = document.getElementById(id);
     el.value = '';
     el.classList.remove('error');
@@ -717,7 +749,6 @@ function closeWsModal() {
 }
 
 async function saveWs() {
-  var emoji = document.getElementById('m-emoji').value.trim();
   var name = document.getElementById('m-name').value.trim();
   var url = document.getElementById('m-url').value.trim();
   var folderId = document.getElementById('m-folder').value || null;
@@ -751,17 +782,17 @@ async function saveWs() {
     if (ws) {
       ws.name = name;
       ws.url = url;
-      ws.emoji = emoji || null;
       ws.folderId = folderId;
       ws.colorId = colorId;
       ws.expireAt = expireAt;
+      if (!ws.emoji) ws.emoji = randomEmoji();
     }
   } else {
     workspaces.push({
       id: Date.now().toString(),
       name: name,
       url: url,
-      emoji: emoji || null,
+      emoji: randomEmoji(),
       folderId: folderId,
       colorId: colorId,
       expireAt: expireAt
@@ -780,7 +811,6 @@ function openFolderModal(folder) {
   document.getElementById('folder-modal-title').textContent = folder ? t('folderEdit') : t('folderAdd');
   document.getElementById('fm-save').textContent = folder ? t('edit') : t('save');
 
-  document.getElementById('fm-emoji').value = folder ? (folder.emoji || '') : '';
   document.getElementById('fm-name').value = folder ? folder.name : '';
 
   document.getElementById('folder-modal').classList.add('open');
@@ -790,15 +820,12 @@ function openFolderModal(folder) {
 function closeFolderModal() {
   document.getElementById('folder-modal').classList.remove('open');
   editingFolderId = null;
-  ['fm-emoji', 'fm-name'].forEach(function (id) {
-    var el = document.getElementById(id);
-    el.value = '';
-    el.classList.remove('error');
-  });
+  var fmName = document.getElementById('fm-name');
+  fmName.value = '';
+  fmName.classList.remove('error');
 }
 
 async function saveFolder() {
-  var emoji = document.getElementById('fm-emoji').value.trim();
   var name = document.getElementById('fm-name').value.trim();
 
   var fName = document.getElementById('fm-name');
@@ -810,13 +837,12 @@ async function saveFolder() {
     var folder = folders.find(function (f) { return f.id === editingFolderId; });
     if (folder) {
       folder.name = name;
-      folder.emoji = emoji || null;
     }
   } else {
     folders.push({
       id: Date.now().toString(),
       name: name,
-      emoji: emoji || null
+      emoji: null
     });
   }
 

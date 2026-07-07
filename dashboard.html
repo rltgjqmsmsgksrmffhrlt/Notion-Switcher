@@ -267,6 +267,15 @@ body {
   background: var(--field);
   padding: 1px 8px; border-radius: 20px; font-weight: 500;
 }
+.btn-eye-toggle {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 14px; padding: 2px 4px; border-radius: var(--r-xs);
+  opacity: 0.5; transition: opacity 0.12s;
+}
+.btn-eye-toggle:hover { opacity: 1; }
+.folder-section.hidden-section .folder-grid { display: none; }
+.folder-section.hidden-section .fl-chevron { display: none; }
+.folder-section.hidden-section .folder-header { opacity: 0.5; }
 .folder-actions { display: none; gap: 2px; margin-left: 2px; }
 .folder-header { cursor: pointer; user-select: none; }
 .folder-header:hover .folder-actions { display: flex; }
@@ -442,7 +451,6 @@ body {
       <input class="modal-input" id="m-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
     </div>
     <div class="modal-row">
-      <input class="modal-input emoji" id="m-emoji" type="text" placeholder="🏢" maxlength="2">
       <input class="modal-input" id="m-name" type="text" data-i18n-placeholder="workspaceName">
     </div>
     <div class="modal-row">
@@ -477,7 +485,6 @@ body {
   <div class="modal">
     <div class="modal-title" id="folder-modal-title" data-i18n="folderAdd"></div>
     <div class="modal-row">
-      <input class="modal-input emoji" id="fm-emoji" type="text" placeholder="📁" maxlength="2">
       <input class="modal-input" id="fm-name" type="text" data-i18n-placeholder="folderName">
     </div>
     <div class="modal-actions">

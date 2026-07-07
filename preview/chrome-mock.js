@@ -27,29 +27,40 @@
   } catch (e) {}
   function persist() { try { localStorage.setItem('__ns_preview', JSON.stringify(store)); } catch (e) {} }
 
+  var localStore = { onboardingDone: true };
   var listeners = [];
+
+  function makeSyncLike(obj, persistFn) {
+    return {
+      get: function (keys, cb) {
+        var out = {};
+        (Array.isArray(keys) ? keys : [keys]).forEach(function (k) { out[k] = obj[k]; });
+        setTimeout(function () { cb(out); }, 0);
+      },
+      set: function (data, cb) {
+        var changes = {};
+        Object.keys(data).forEach(function (k) {
+          changes[k] = { oldValue: obj[k], newValue: data[k] };
+          obj[k] = data[k];
+        });
+        if (persistFn) persistFn();
+        setTimeout(function () {
+          if (cb) cb();
+          listeners.forEach(function (l) { l(changes, 'sync'); });
+        }, 0);
+      },
+      remove: function (key, cb) {
+        var keys = Array.isArray(key) ? key : [key];
+        keys.forEach(function (k) { delete obj[k]; });
+        setTimeout(function () { if (cb) cb(); }, 0);
+      },
+    };
+  }
 
   window.chrome = {
     storage: {
-      sync: {
-        get: function (keys, cb) {
-          var out = {};
-          (Array.isArray(keys) ? keys : [keys]).forEach(function (k) { out[k] = store[k]; });
-          setTimeout(function () { cb(out); }, 0);
-        },
-        set: function (obj, cb) {
-          var changes = {};
-          Object.keys(obj).forEach(function (k) {
-            changes[k] = { oldValue: store[k], newValue: obj[k] };
-            store[k] = obj[k];
-          });
-          persist();
-          setTimeout(function () {
-            if (cb) cb();
-            listeners.forEach(function (l) { l(changes, 'sync'); });
-          }, 0);
-        },
-      },
+      sync: makeSyncLike(store, persist),
+      local: makeSyncLike(localStore),
       onChanged: { addListener: function (fn) { listeners.push(fn); } },
     },
     tabs: {
@@ -62,7 +73,8 @@
       create: function (opts) { window.open(opts.url, '_blank'); return Promise.resolve(); },
     },
     windows: { update: function () { return Promise.resolve(); } },
-    runtime: { getURL: function (p) { return p; } },
+    runtime: { getURL: function (p) { return '../' + p; } },
     i18n: { getMessage: function (key) { return ''; } },
+    commands: { getAll: function (cb) { if (cb) setTimeout(function () { cb([]); }, 0); return Promise.resolve([]); } },
   };
 })();

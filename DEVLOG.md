@@ -4,6 +4,147 @@ Notion Switcher 개발 기록.
 
 ---
 
+## 2026-07-08 — v3.2 마무리: 버그 수정, 필터 드래그, 이름 변경
+
+### 변경사항
+
+**1. 온보딩 Step 2 하이라이트 링 수정**
+- `.filter-bar`의 `overflow-x: auto`가 `#filter-add-folder`의 `box-shadow` 하이라이트 링을 클리핑하고 있었음
+- `.filter-bar:has(.ob-highlight) { overflow: visible }` 추가로 온보딩 중에만 overflow 해제
+
+**2. 필터 바 드래그 스크롤**
+- 폴더가 많아서 필터 pill이 팝업 밖까지 이어질 때, mousedown 후 좌우 드래그로 스크롤 가능
+- 3px 이상 이동 시 드래그로 판정 → 클릭(필터 선택) 이벤트 무시
+- `cursor: grab` / `grabbing` 전환
+
+**3. 확장 이름 변경**
+- "Notion Workspace Switcher" → "Notion Switcher" (en/ko 모두)
+
+**4. 스토어 등록정보 업데이트**
+- HOW IT WORKS: 온보딩 순서(링크 추가 → 폴더 만들기 → 숫자키 → 설정·대시보드)에 맞춤
+- KEY FEATURES: v3.2 신규 기능(폴더 필터, 임시 링크, 이름 자동 생성) 반영
+- 삭제된 검색 관련 항목 제거
+
+**5. 프리뷰 파일 v3.2 동기화**
+- `popup-preview.html`: 현재 popup.html 구조에 맞게 전면 재작성
+- `dashboard-preview.html`: 현재 dashboard.html 구조에 맞게 전면 재작성
+- `chrome-mock.js`: `chrome.storage.local`, `chrome.commands` mock 추가
+
+### 변경 파일
+
+- `styles/onboarding.css` — `.filter-bar:has(.ob-highlight)` 규칙 추가
+- `popup.js` — `initFilterDrag` IIFE, `filterDragged` 플래그
+- `popup.html` — `.filter-bar`에 `cursor: grab`
+- `_locales/en/messages.json` / `_locales/ko/messages.json` — extName 변경
+- `preview/popup-preview.html` — v3.2 UI로 전면 재작성
+- `preview/dashboard-preview.html` — v3.2 UI로 전면 재작성
+- `preview/chrome-mock.js` — storage.local, commands mock 추가
+
+---
+
+## 2026-07-07 — v3.2: 팝업 UI 전면 리디자인 + 온보딩 가이드
+
+### 왜 — 사용자가 겪는 문제
+
+**"검색바가 자리만 차지한다"**
+팝업에서 검색을 쓰는 빈도보다 링크를 추가하는 빈도가 높다. 검색은 `Ctrl+F`로 대체 가능한데, 가장 좋은 자리를 차지하고 있었다. 링크 추가 동선이 "하단 버튼 클릭 → 폼 스크롤"로 비효율적이었다.
+
+**"폼이 너무 길어서 팝업이 답답하다"**
+워크스페이스 추가 폼에 URL, 이름, 이모지, 색상, 폴더, 만료 등 모든 필드가 한 번에 열렸다. 대부분은 URL만 넣고 바로 저장하고 싶은데, 불필요한 옵션이 화면을 가린다.
+
+**"이모지를 매번 골라야 하나?"**
+이모지 선택은 대부분 건너뛰거나 기본값을 쓴다. 선택 과정이 워크스페이스 추가의 병목이 되고 있었다.
+
+**"온보딩 오버레이가 UI를 완전히 가려서 아무것도 못 한다"**
+기존 온보딩은 풀스크린 오버레이로 각 단계를 보여줬는데, 팝업 자체가 가려져서 사용자가 혼란스럽다는 피드백.
+
+**"서비스 아이덴티티가 없다"**
+확장 프로그램의 고유 색상이 없어서 Notion 생태계 도구라는 인상이 약했다.
+
+### 변경사항
+
+**1. 검색바 → "링크 추가" 영역**
+- 상단 검색바 제거, `＋ 링크 추가` 클릭 영역으로 교체
+- 호버 시 accent 글로우 + 색상 변화로 클릭 유도
+- 키보드 단축키(1~9, Enter, Escape, D)는 document 레벨 핸들러(`onGlobalKey`)로 이전
+- 입력 중일 때는 단축키 무시 (input/select 포커스 체크)
+
+**2. 컴팩트 추가 폼 + "상세 설정" 토글**
+- 폼이 하단이 아닌 상단에 인라인으로 열림
+- 기본 표시: URL 입력 + 저장 버튼 (1줄)
+- `▸ 상세 설정` 토글로 이름, 색상, 폴더, 만료 옵션 펼침/접기
+- 편집 모드에서는 상세 설정 자동 펼침
+- 취소/저장 시 `＋ 링크 추가` 영역 복원
+
+**3. 이모지 자동 할당**
+- 이모지 입력 필드 완전 제거 (팝업 + 대시보드)
+- 새 워크스페이스 저장 시 70종 랜덤 이모지 자동 할당
+- 편집 시 기존 이모지 유지
+- 재미 이모지 포함 (🦊🌮🎪🧊🪐 등)
+
+**4. 폴더 추가 버튼 (필터 바)**
+- 필터 pill 바 끝에 `＋` dashed circle 버튼 추가
+- 클릭 시 인라인 폴더 이름 입력 필드 토글
+- 이모지 없이 폴더 생성
+
+**5. 불필요 UI 제거**
+- 하단 `워크스페이스 추가` 버튼 완전 삭제
+- workspace actions에서 `새 탭` 버튼 삭제 (항상 현재 탭에서 열림)
+- `여기에 추가` → `아래에 추가` 툴팁 변경
+
+**6. 클릭 피드백 애니메이션**
+- 워크스페이스 클릭: `scale(0.97)` + `clickFlash` 애니메이션 (accent 배경 플래시)
+- 필터 pill 활성화: `pillPop` 애니메이션 (바운스)
+- 버튼류: `:active` 시 `scale(0.95)`
+
+**7. 설정 패널 재정렬**
+- 순서: 테마 → 피드백(Tally iframe) → 단축키 → Chrome 단축키 → 전체 삭제 → 기획자 응원하기
+- 가이드 다시보기: 타이틀 바에 `?` 아이콘 버튼으로 이동 (구석탱이)
+- `미분류 숨기기` 설정에서 제거 → 대시보드 eye 토글로 이동
+
+**8. 대시보드 미분류 eye 토글**
+- 미분류 섹션 헤더에 👁 토글 버튼 추가
+- 클릭 시 미분류 그리드 숨기기/보이기
+- `appSettings.hideUncategorized` 저장
+
+**9. 온보딩 가이드 전면 재설계**
+- v1: 오버레이 기반 스텝 바이 스텝 → UI 가림 문제
+- v2: 번호 뱃지(①②③④) + 레전드 카드 → 바텀시트가 ③ 가림, 인라인 카드도 겹침 문제
+- **v3 (최종): 화살표 이동 스텝 가이드**
+  - 한 번에 하나씩 표시 (1/4 → 2/4 → 3/4 → 4/4)
+  - ▶ 삼각형 화살표가 현재 대상 옆에서 바운스 (ob-nudge 애니메이션)
+  - "다음 →" 클릭 시 화살표가 다음 대상으로 슬라이드 이동 (0.5s ease transition)
+  - 현재 대상에 파란색 하이라이트 링 (box-shadow)
+  - 대상 아래(공간 부족 시 위)에 툴팁: 스텝 번호 + 설명 + 다음/건너뛰기 버튼
+  - Step 3: 예시 워크스페이스 아이템을 리스트에 임시 삽입하여 숫자키 점프 기능 시연
+  - 4가지 포인트: ① 링크 추가 → ② 폴더 만들기 → ③ 숫자키 1~9 → ④ 설정·대시보드
+
+**10. 브랜드 컬러: Notion Blue**
+- `--accent`: 라이트 `#2F80ED` / 다크 `#5B9EF4`
+- `--accent-soft`: 라이트 `rgba(47,128,237,0.10)` / 다크 `rgba(91,158,244,0.16)`
+
+**11. kbd-hint 간소화**
+- `숫자 1~9 바로 이동 · Enter 첫 번째 결과 · Shift+클릭 새 탭` → `숫자 1~9 바로 이동`
+
+### 알려진 이슈
+
+- ~~**온보딩 Step 2**: `#filter-add-folder` (＋ 버튼) 하이라이트 링이 주변 요소에 가려짐~~ → **해결**: `.filter-bar`의 `overflow-x: auto`가 `box-shadow`를 클리핑하고 있었음. `.filter-bar:has(.ob-highlight) { overflow: visible }` 추가로 온보딩 중에만 overflow 해제.
+
+### 변경 파일
+
+- `popup.html` — 검색바→링크추가 영역, 컴팩트 폼, 필터바 폴더추가, 하단 버튼 삭제, 클릭 애니메이션, min-height
+- `popup.js` — onGlobalKey, renderFilterBar 변경, 랜덤 이모지, openAddForm/saveForm 리팩토링, 검색 관련 코드 제거
+- `dashboard.html` — 이모지 입력 삭제, eye 토글 CSS
+- `dashboard.js` — 랜덤 이모지, renderUnfiledSection eye 토글, bindEyeToggle
+- `settings.js` — 패널 순서 재정렬, ? 가이드 버튼, hideUncategorized 제거
+- `onboarding.js` — 전면 재작성 (스텝 바이 스텝 화살표 이동, 예시 워크스페이스)
+- `styles/onboarding.css` — 전면 재작성 (ob-arrow, ob-highlight, ob-tooltip, ob-mock)
+- `styles/tokens.css` — accent 컬러 변경 (#2F80ED / #5B9EF4)
+- `_locales/ko/messages.json` — addLink, moreOptions, lessOptions, addBelow, obTip1~4, kbdHint 간소화
+- `_locales/en/messages.json` — 동일 키 추가/변경
+
+---
+
 ## 2026-07-03 — v3.1.2: 전체 삭제, UX 디테일
 
 ### 왜 — 사용자가 겪는 문제

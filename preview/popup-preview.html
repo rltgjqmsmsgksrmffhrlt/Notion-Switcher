@@ -2,20 +2,31 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="../icons/icon16.svg">
 <link rel="stylesheet" href="../styles/tokens.css">
 <link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/onboarding.css">
 <script src="../theme-init.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--paper); }
 
 body {
   width: 320px;
+  max-height: 600px;
+  overflow-y: auto;
   font-family: var(--font);
   font-size: var(--t-body);
   background: var(--paper);
   color: var(--ink);
   user-select: none;
   -webkit-font-smoothing: antialiased;
+}
+body::-webkit-scrollbar { width: 8px; }
+body::-webkit-scrollbar-track { background: transparent; }
+body::-webkit-scrollbar-thumb {
+  background: var(--line-2); border-radius: 4px;
+  border: 2px solid var(--paper);
 }
 
 /* ── Header ───────────────────────────────── */
@@ -56,41 +67,37 @@ body {
 }
 .btn-dashboard:hover { background: var(--hover); color: var(--ink); }
 
-/* ── Search ───────────────────────────────── */
-.search-wrap { padding: 4px 10px 8px; position: relative; }
-.search-wrap::before {
-  content: "";
-  position: absolute;
-  left: 22px; top: 50%;
-  width: 14px; height: 14px;
-  margin-top: -8px;
-  background: var(--ink-4);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E") center/contain no-repeat;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E") center/contain no-repeat;
-  pointer-events: none;
-}
-.search-input {
+/* ── Add Link area ────────────────────────── */
+.add-link-wrap { padding: 4px 10px 8px; position: relative; }
+.add-link-area {
   width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: var(--field);
-  border: 1px solid transparent;
+  border: 1px solid var(--line-2);
   border-radius: var(--r-md);
-  padding: 8px 12px 8px 32px;
-  color: var(--ink);
+  padding: 9px 14px;
+  color: var(--ink-4);
   font-size: 13.5px;
   font-family: var(--font);
-  outline: none;
-  transition: background 0.12s, border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.12s, box-shadow 0.15s;
 }
-.search-input:focus {
+.add-link-area:hover {
   background: var(--paper);
   border-color: var(--accent);
+  color: var(--ink-2);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
-.search-input::placeholder { color: var(--ink-4); }
+.add-link-icon { font-size: 14px; line-height: 1; opacity: 0.6; }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* ── List ─────────────────────────────────── */
 .workspace-list {
   overflow-y: auto;
+  min-height: 320px;
   max-height: 360px;
   padding: 2px 6px 6px;
 }
@@ -101,6 +108,42 @@ body {
   border: 2px solid var(--paper);
 }
 
+/* ── Filter bar ──────────────────────────── */
+.filter-bar { display: flex; gap: 4px; padding: 0 10px 6px; overflow-x: auto; scrollbar-width: none; cursor: grab; }
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-bar:empty { display: none; }
+.filter-add-btn {
+  flex: none;
+  width: 24px; height: 24px;
+  border-radius: 12px;
+  border: 1px dashed var(--line-2);
+  background: transparent;
+  color: var(--ink-4);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+  font-family: var(--font);
+}
+.filter-add-btn:hover { background: var(--hover); border-color: var(--ink-4); color: var(--ink-2); }
+.folder-add-inline {
+  display: none;
+  gap: 4px;
+  padding: 2px 10px 8px;
+  align-items: center;
+}
+.folder-add-inline.open { display: flex; }
+.filter-pill {
+  flex: none; padding: 3px 10px; border-radius: 12px;
+  border: 1px solid var(--line-2); background: var(--paper);
+  color: var(--ink-3); font-size: 11px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: all 0.12s;
+  font-family: var(--font);
+}
+.filter-pill:hover { background: var(--hover); }
+.filter-pill.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* ── Folder section ─────────────────────── */
 .folder-label {
   display: flex;
   align-items: center;
@@ -110,8 +153,15 @@ body {
   font-weight: 600;
   color: var(--ink-3);
   letter-spacing: 0.01em;
+  cursor: pointer;
+  user-select: none;
 }
+.folder-label:hover { color: var(--ink-2); }
 .folder-label .fl-emoji { font-size: 12px; filter: saturate(0.85); }
+.fl-count { font-size: 10px; color: var(--ink-4); font-weight: 500; }
+.fl-chevron { margin-left: auto; font-size: 10px; color: var(--ink-4); transition: transform 0.15s; }
+.folder-section.collapsed .fl-chevron { transform: rotate(-90deg); }
+.folder-section.collapsed .folder-items { display: none; }
 
 /* ── Row ──────────────────────────────────── */
 .workspace-item {
@@ -125,8 +175,23 @@ body {
   transition: padding-left 0.14s ease, background 0.1s;
 }
 .workspace-item:hover { background: var(--hover); padding-left: 42px; }
+.workspace-item:active { transform: scale(0.97); }
 .workspace-item.active-ws { background: var(--accent-soft); }
 .workspace-item.kbd-focus { background: var(--hover); box-shadow: inset 0 0 0 1px var(--line-2); }
+.workspace-item.click-flash {
+  animation: clickFlash 0.3s ease;
+}
+@keyframes clickFlash {
+  0% { background: var(--accent-soft); transform: scale(0.97); }
+  100% { background: transparent; transform: scale(1); }
+}
+.filter-pill:active, .btn-add-link:active, .btn-sm:active { transform: scale(0.95); }
+.filter-pill.active { animation: pillPop 0.2s ease; }
+@keyframes pillPop {
+  0% { transform: scale(0.9); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
 
 /* gutter: ＋ add + ⠿ drag handle, revealed on hover */
 .ws-gutter {
@@ -221,6 +286,7 @@ body {
 .workspace-item.drop-below::after { bottom: -1px; }
 .workspace-item.dragging { opacity: 0.4; }
 
+
 .empty {
   padding: 34px 16px;
   text-align: center;
@@ -234,14 +300,31 @@ body {
 .add-form {
   display: none;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-  margin: 0 8px 6px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  gap: 5px;
+  padding: 8px 10px 10px;
+  margin: 0 0 6px;
+  border-bottom: 1px solid var(--line);
   background: var(--paper-2);
 }
 .add-form.open { display: flex; }
+.add-form .form-url-row {
+  display: flex; gap: 5px; align-items: center;
+}
+.add-form .form-url-row .form-input { font-size: 12px; padding: 6px 8px; }
+.add-form .form-url-row .btn-save { padding: 6px 12px; font-size: 12px; }
+.form-bottom-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.form-more-toggle {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-4); font-size: 11px; padding: 2px 0;
+  font-family: var(--font); transition: color 0.1s;
+}
+.form-more-toggle:hover { color: var(--ink-2); }
+.form-extras { display: none; flex-direction: column; gap: 5px; }
+.form-extras.open { display: flex; }
+.form-extras .form-input,
+.form-extras .form-select { font-size: 12px; padding: 5px 8px; }
 .form-row { display: flex; gap: 6px; }
 .form-input {
   flex: 1;
@@ -301,28 +384,26 @@ body {
 }
 .expire-badge {
   font-size: 10px; font-weight: 600;
-  color: #e67e22;
-  background: rgba(230,126,34,0.12);
+  color: var(--warning, #e67e22);
+  background: var(--warning-soft, rgba(230,126,34,0.12));
   padding: 1px 6px; border-radius: 10px;
   margin-left: 4px; white-space: nowrap;
 }
-
-/* ── Footer ───────────────────────────────── */
-.footer { padding: 4px 8px 6px; }
-.btn-add {
-  width: 100%;
-  padding: 8px 10px;
-  background: transparent; border: none;
+.hide-uncat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; margin: 0 6px 4px;
   border-radius: var(--r-sm);
-  color: var(--ink-3);
-  font-size: 13px;
-  cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
-  transition: background 0.1s, color 0.1s;
-  text-align: left;
+  font-size: 11px; color: var(--ink-3);
 }
-.btn-add:hover { background: var(--hover); color: var(--ink); }
-.btn-add-icon { font-size: 15px; line-height: 1; width: 16px; text-align: center; }
+.hide-uncat-btn {
+  background: transparent; border: 1px solid var(--line-2);
+  border-radius: var(--r-sm); padding: 3px 8px;
+  font-size: 11px; color: var(--ink-3); cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.hide-uncat-btn:hover:not(:disabled) { background: var(--hover); color: var(--ink); border-color: var(--ink-4); }
+.hide-uncat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .kbd-hint {
   font-size: 10.5px;
@@ -342,65 +423,67 @@ body {
     <span class="header-count" id="ws-count"></span>
   </div>
   <div class="header-right" style="display:flex;align-items:center;gap:2px">
-    <button class="btn-icon" id="btn-settings" title="설정"></button>
-    <button class="btn-dashboard" id="btn-dashboard" title="Alt+Shift+N">대시보드 ↗</button>
+    <button class="btn-icon" id="btn-settings" data-i18n-title="settings"></button>
+    <button class="btn-dashboard" id="btn-dashboard" title="Alt+Shift+N" data-i18n="dashboard"></button>
   </div>
 </div>
 
-<div class="search-wrap">
-  <input class="search-input" id="search" type="text" placeholder="검색 또는 숫자(1~9)로 바로 이동" autocomplete="off" spellcheck="false">
+<div class="add-link-wrap" id="add-link-wrap">
+  <div class="add-link-area" id="btn-add-link">
+    <span class="add-link-icon">＋</span>
+    <span data-i18n="addLink"></span>
+  </div>
 </div>
-
-<div class="workspace-list" id="ws-list"></div>
 
 <div class="add-form" id="add-form">
-  <div class="form-row">
-    <input class="form-input emoji" id="f-emoji" type="text" placeholder="🏢" maxlength="2">
-    <input class="form-input" id="f-name" type="text" placeholder="워크스페이스 이름">
+  <div class="form-url-row">
+    <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+    <button class="btn-save" id="btn-save" data-i18n="save"></button>
   </div>
-  <div class="swatch-row" id="f-colors"></div>
-  <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
-  <div class="form-row">
-    <select class="form-select" id="f-expire">
-      <option value="">영구</option>
-      <option value="1">1일</option>
-      <option value="7">1주일</option>
-      <option value="custom">직접 지정</option>
-    </select>
+  <div class="form-bottom-row">
+    <button class="form-more-toggle" id="btn-more-options" data-i18n="moreOptions"></button>
+    <button class="btn-cancel-form" id="btn-cancel" data-i18n="cancel" style="font-size:11px;padding:4px 8px"></button>
   </div>
-  <div class="form-row" id="custom-days-row" style="display:none">
-    <input class="form-input" id="f-custom-days" type="number" min="1" max="365" placeholder="일수 입력">
-    <span class="form-unit">일</span>
-  </div>
-  <div class="form-row">
-    <select class="form-select" id="f-folder">
-      <option value="">📋 미분류</option>
-    </select>
-  </div>
-  <div class="form-row" id="new-folder-row" style="display:none">
-    <input class="form-input" id="f-folder-emoji" type="text" placeholder="📁" maxlength="2" style="width:40px;flex:none;text-align:center">
-    <input class="form-input" id="f-folder-name" type="text" placeholder="새 폴더 이름">
-    <button class="btn-save" id="btn-folder-create" style="padding:6px 10px;flex:none">추가</button>
-  </div>
-  <div class="form-btns">
-    <button class="btn-cancel-form" id="btn-cancel">취소</button>
-    <button class="btn-save" id="btn-save">저장</button>
+  <div class="form-extras" id="form-extras">
+    <input class="form-input" id="f-name" type="text" data-i18n-placeholder="workspaceName">
+    <div class="swatch-row" id="f-colors"></div>
+    <div class="form-row">
+      <select class="form-select" id="f-expire">
+        <option value="" data-i18n="permanent"></option>
+        <option value="1" data-i18n="oneDay"></option>
+        <option value="7" data-i18n="oneWeek"></option>
+        <option value="custom" data-i18n="customDays"></option>
+      </select>
+      <select class="form-select" id="f-folder">
+        <option value="" data-i18n="uncategorized"></option>
+      </select>
+    </div>
+    <div class="form-row" id="custom-days-row" style="display:none">
+      <input class="form-input" id="f-custom-days" type="number" min="1" max="365" data-i18n-placeholder="daysPlaceholder">
+      <span class="form-unit" data-i18n="daysUnit"></span>
+    </div>
+    <div class="form-row" id="new-folder-row" style="display:none">
+      <input class="form-input" id="f-folder-name" type="text" data-i18n-placeholder="newFolderName">
+      <button class="btn-save" id="btn-folder-create" style="padding:5px 10px;flex:none;font-size:12px" data-i18n="add"></button>
+    </div>
   </div>
 </div>
 
-<div class="footer">
-  <button class="btn-add" id="btn-add">
-    <span class="btn-add-icon">＋</span>
-    <span>워크스페이스 추가</span>
-  </button>
+<div class="filter-bar" id="filter-bar"></div>
+<div class="folder-add-inline" id="folder-add-inline">
+  <input class="form-input" id="fa-name" type="text" data-i18n-placeholder="newFolderName" style="padding:5px 8px;font-size:12px">
+  <button class="btn-save" id="fa-save" style="padding:5px 10px;font-size:12px" data-i18n="add"></button>
+  <button class="btn-cancel-form" id="fa-cancel" style="padding:5px 8px;font-size:12px" data-i18n="cancel"></button>
 </div>
+<div class="workspace-list" id="ws-list"></div>
 
-<div class="kbd-hint">숫자 <b>1~9</b> 바로 이동 · <b>Enter</b> 첫 번째 결과 · <b>Shift+클릭</b> 새 탭</div>
+<div class="kbd-hint" data-i18n="kbdHint"></div>
 
-<script src="../preview/chrome-mock.js"></script>
+<script src="chrome-mock.js"></script>
 <script src="../i18n.js"></script>
 <script src="../ui.js"></script>
 <script src="../settings.js"></script>
+<script src="../onboarding.js"></script>
 <script src="../popup.js"></script>
 </body>
 </html>

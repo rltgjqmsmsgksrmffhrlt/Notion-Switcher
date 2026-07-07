@@ -1,0 +1,107 @@
+/* ── Traveling arrow (▶) ─────────────────── */
+.ob-arrow {
+  position: fixed;
+  z-index: 920;
+  width: 0; height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid var(--accent);
+  transform: translateY(-50%);
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(47,128,237,0.4));
+  animation: ob-enter 0.3s ease both, ob-nudge 0.8s ease-in-out 0.3s infinite;
+}
+.ob-arrow.ob-moving {
+  transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ob-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes ob-nudge {
+  0%, 100% { margin-left: 0; }
+  50%      { margin-left: 5px; }
+}
+
+/* ── Highlight ring on current target ────── */
+.ob-highlight {
+  position: relative !important;
+  z-index: 940 !important;
+  box-shadow: 0 0 0 2px var(--accent),
+              0 0 0 6px var(--accent-soft) !important;
+}
+.filter-bar:has(.ob-highlight) {
+  overflow: visible !important;
+}
+
+/* ── Mock workspace item for step 3 ──────── */
+.ob-mock {
+  animation: ob-mock-in 0.3s ease both;
+}
+@keyframes ob-mock-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ob-badge-highlight {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+}
+
+/* ── Step tooltip ────────────────────────── */
+.ob-tooltip {
+  position: fixed;
+  z-index: 930;
+  width: 208px;
+  background: var(--paper);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-pop);
+  animation: ob-tt-in 0.25s ease both;
+}
+.ob-tooltip.ob-moving {
+  transition: top 0.4s ease, left 0.4s ease;
+}
+
+@keyframes ob-tt-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ob-tt-body { margin-bottom: 8px; line-height: 1.5; }
+.ob-tt-step { font-size: 10px; font-weight: 700; color: var(--accent); }
+.ob-tt-text { font-size: 12.5px; color: var(--ink); }
+
+.ob-tt-btns { display: flex; gap: 6px; }
+
+.ob-btn-primary {
+  flex: 1;
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+.ob-btn-primary:hover { filter: brightness(1.08); }
+.ob-btn-primary:active { transform: scale(0.97); }
+
+.ob-btn-skip {
+  padding: 5px 10px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-4);
+  font-size: 11px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+}
+.ob-btn-skip:hover { color: var(--ink-2); background: var(--hover); }

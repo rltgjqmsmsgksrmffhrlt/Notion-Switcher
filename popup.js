@@ -52,17 +52,15 @@ function populateFolderSelect(selectedFolderId) {
 }
 
 async function createNewFolder() {
-  var emoji = document.getElementById('f-folder-emoji').value.trim();
   var name = document.getElementById('f-folder-name').value.trim();
   if (!name) { document.getElementById('f-folder-name').focus(); return; }
 
-  var newFolder = { id: Date.now().toString(), name: name, emoji: emoji || null };
+  var newFolder = { id: Date.now().toString(), name: name, emoji: null };
   folders.push(newFolder);
   await saveFolders(folders);
 
   populateFolderSelect(newFolder.id);
   document.getElementById('f-folder-name').value = '';
-  document.getElementById('f-folder-emoji').value = '';
 }
 
 function smartOpen(url) {
@@ -103,6 +101,20 @@ function randomName() {
   var a = RANDOM_ADJ[Math.floor(Math.random() * RANDOM_ADJ.length)];
   var n = RANDOM_NOUN[Math.floor(Math.random() * RANDOM_NOUN.length)];
   return a + ' ' + n;
+}
+
+var RANDOM_EMOJI = [
+  '🚀','🌈','⭐','🔥','💎','🎯','📌','🏠','💡','🎨',
+  '🌍','🌙','☀️','⚡','🍀','🎵','📚','🧩','🎲','🏆',
+  '🦊','🐱','🐧','🦋','🐬','🐼','🦁','🐻','🦄','🐳',
+  '🍕','🍩','☕','🍎','🌸','🌻','🌴','🍄','💜','💙',
+  '👻','🤖','👾','🎃','🥸','🤡','🥳','😎','🫠','🤯',
+  '💩','🧠','👁‍🗨','🫧','🪄','🛸','🎪','🧸','🪅','🎭',
+  '🦑','🦖','🦩','🐸','🐙','🦔','🐝','🦜','🐢','🦀'
+];
+
+function randomEmoji() {
+  return RANDOM_EMOJI[Math.floor(Math.random() * RANDOM_EMOJI.length)];
 }
 
 function autoName(url) {
@@ -156,15 +168,39 @@ async function init() {
   renderList();
   updateCount();
 
-  var search = document.getElementById('search');
-  search.focus();
-  search.addEventListener('input', onSearch);
-  search.addEventListener('keydown', onSearchKey);
+  document.getElementById('btn-add-link').addEventListener('click', function () {
+    var isOpen = addForm.classList.contains('open');
+    if (isOpen && !editingId) {
+      addForm.classList.remove('open');
+      document.getElementById('form-extras').classList.remove('open');
+      clearForm();
+      return;
+    }
+    openAddForm();
+  });
+
+  document.getElementById('btn-more-options').addEventListener('click', function () {
+    var extras = document.getElementById('form-extras');
+    extras.classList.toggle('open');
+    this.textContent = extras.classList.contains('open') ? t('lessOptions') : t('moreOptions');
+  });
+
+  document.addEventListener('keydown', onGlobalKey);
+
+  document.getElementById('fa-save').addEventListener('click', saveFolderFromBar);
+  document.getElementById('fa-cancel').addEventListener('click', function () {
+    document.getElementById('folder-add-inline').classList.remove('open');
+  });
+  document.getElementById('fa-name').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') saveFolderFromBar();
+    if (e.key === 'Escape') document.getElementById('folder-add-inline').classList.remove('open');
+  });
 
   document.getElementById('btn-dashboard').addEventListener('click', openDashboard);
   Theme.init();
   Settings.mount(document.getElementById('btn-settings'));
   CustomSelect.enhance(document.getElementById('f-folder'));
+  Onboarding.checkAndStart();
 }
 
 function openDashboard() {
@@ -193,7 +229,7 @@ function renderItem(ws, idx) {
     ' data-id="' + esc(ws.id) + '" data-url="' + esc(ws.url) + '" data-idx="' + idx + '"' +
     ' data-folder="' + esc(ws.folderId || '') + '">' +
     '<div class="ws-gutter">' +
-      '<button class="g-btn g-add" data-action="add" data-folder="' + esc(ws.folderId || '') + '" title="' + esc(t('addHere')) + '" tabindex="-1">＋</button>' +
+      '<button class="g-btn g-add" data-action="add" data-folder="' + esc(ws.folderId || '') + '" title="' + esc(t('addBelow')) + '" tabindex="-1">＋</button>' +
       '<span class="g-btn g-handle" draggable="true" title="' + esc(t('dragToSort')) + '" tabindex="-1">⠿</span>' +
     '</div>' +
     '<div class="ws-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
@@ -204,7 +240,6 @@ function renderItem(ws, idx) {
     '<div class="ws-meta">' +
       '<div class="ws-actions">' +
         '<button class="btn-sm edit" data-action="edit" data-id="' + esc(ws.id) + '" title="' + esc(t('editBtn')) + '" tabindex="-1">✎</button>' +
-        '<button class="btn-sm" data-action="newtab" data-url="' + esc(ws.url) + '" title="' + esc(t('newTab')) + '" tabindex="-1">↗</button>' +
         '<button class="btn-sm del" data-action="delete" data-id="' + esc(ws.id) + '" title="' + esc(t('deleteBtn')) + '" tabindex="-1">✕</button>' +
       '</div>' +
       badge +
@@ -215,7 +250,7 @@ function renderItem(ws, idx) {
 function renderList() {
   renderFilterBar();
   var list = document.getElementById('ws-list');
-  var isSearching = document.getElementById('search').value.trim().length > 0;
+  var isSearching = false;
 
   displayOrder = [];
 
@@ -373,14 +408,15 @@ async function onItemClick(e) {
   if (btn) {
     e.stopPropagation();
     var action = btn.dataset.action;
-    if (action === 'newtab') smartOpen(btn.dataset.url);
-    else if (action === 'delete') await deleteWs(btn.dataset.id);
+    if (action === 'delete') await deleteWs(btn.dataset.id);
     else if (action === 'edit') startEdit(btn.dataset.id);
     else if (action === 'add') openAddForm(btn.dataset.folder || null);
     return;
   }
-  var url = e.currentTarget.dataset.url;
-  smartOpen(url);
+  var item = e.currentTarget;
+  item.classList.add('click-flash');
+  var url = item.dataset.url;
+  setTimeout(function () { smartOpen(url); }, 150);
 }
 
 function startEdit(id) {
@@ -388,7 +424,6 @@ function startEdit(id) {
   if (!ws) return;
 
   editingId = ws.id;
-  document.getElementById('f-emoji').value = ws.emoji || '';
   document.getElementById('f-name').value = ws.name;
   document.getElementById('f-url').value = ws.url;
   buildSwatches(document.getElementById('f-colors'), ws.colorId != null ? ws.colorId : null);
@@ -406,6 +441,9 @@ function startEdit(id) {
   }
 
   addForm.classList.add('open');
+  document.getElementById('form-extras').classList.add('open');
+  document.getElementById('btn-more-options').textContent = t('lessOptions');
+  document.getElementById('add-link-wrap').style.display = 'none';
   document.getElementById('f-name').focus();
 }
 
@@ -416,10 +454,10 @@ async function deleteWs(id) {
   updateCount();
 }
 
-function onSearch() { applyFilter(); }
+function onGlobalKey(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
 
-function onSearchKey(e) {
-  if (!document.getElementById('search').value && e.key >= '1' && e.key <= '9') {
+  if (e.key >= '1' && e.key <= '9') {
     var idx = parseInt(e.key) - 1;
     if (idx < displayOrder.length) {
       e.preventDefault();
@@ -427,29 +465,34 @@ function onSearchKey(e) {
     }
     return;
   }
-
   if (e.key === 'Enter' && displayOrder.length > 0) {
     smartOpen(displayOrder[0].url);
   }
   if (e.key === 'Escape') {
-    var q = document.getElementById('search').value;
-    if (q) {
-      document.getElementById('search').value = '';
-      applyFilter();
-    } else {
-      window.close();
-    }
+    window.close();
   }
-  if (e.key === 'd' && !document.getElementById('search').value) {
+  if (e.key === 'd' || e.key === 'D') {
     e.preventDefault();
     openDashboard();
   }
 }
 
+async function saveFolderFromBar() {
+  var name = document.getElementById('fa-name').value.trim();
+  if (!name) { document.getElementById('fa-name').focus(); return; }
+
+  var newFolder = { id: Date.now().toString(), name: name, emoji: null };
+  folders.push(newFolder);
+  await saveFolders(folders);
+
+  document.getElementById('fa-name').value = '';
+  document.getElementById('folder-add-inline').classList.remove('open');
+  renderFilterBar();
+  renderList();
+}
+
 function applyFilter() {
-  var q = document.getElementById('search').value.toLowerCase().trim();
   filtered = workspaces.filter(function (w) {
-    if (q && !(w.name.toLowerCase().includes(q) || w.url.toLowerCase().includes(q) || (w.emoji && w.emoji.includes(q)))) return false;
     if (activeFilter && activeFilter !== '__expiry__') {
       if (activeFilter === '__unfiled__') return !w.folderId || !folders.some(function (f) { return f.id === w.folderId; });
       return w.folderId === activeFilter;
@@ -472,7 +515,6 @@ function applyFilter() {
 function renderFilterBar() {
   var bar = document.getElementById('filter-bar');
   var hasTemp = workspaces.some(function (w) { return w.expireAt; });
-  if (folders.length === 0 && !hasTemp) { bar.innerHTML = ''; return; }
   var html = '<button class="filter-pill' + (!activeFilter ? ' active' : '') + '" data-filter="">' + esc(t('filterAll')) + '</button>';
   folders.forEach(function (f) {
     html += '<button class="filter-pill' + (activeFilter === f.id ? ' active' : '') + '" data-filter="' + esc(f.id) + '">' +
@@ -481,8 +523,16 @@ function renderFilterBar() {
   if (hasTemp) {
     html += '<button class="filter-pill' + (activeFilter === '__expiry__' ? ' active' : '') + '" data-filter="__expiry__">⏳ ' + esc(t('expirySort')) + '</button>';
   }
+  html += '<button class="filter-add-btn" id="filter-add-folder" title="' + esc(t('folderAdd')) + '">＋</button>';
   bar.innerHTML = html;
   bar.onclick = function (e) {
+    if (filterDragged) { filterDragged = false; return; }
+    if (e.target.closest('.filter-add-btn')) {
+      var inline = document.getElementById('folder-add-inline');
+      inline.classList.toggle('open');
+      if (inline.classList.contains('open')) document.getElementById('fa-name').focus();
+      return;
+    }
     var pill = e.target.closest('.filter-pill');
     if (!pill) return;
     activeFilter = pill.dataset.filter || null;
@@ -490,6 +540,33 @@ function renderFilterBar() {
     applyFilter();
   };
 }
+
+var filterDragged = false;
+(function initFilterDrag() {
+  var bar = document.getElementById('filter-bar');
+  var startX, startScroll;
+
+  bar.addEventListener('mousedown', function (e) {
+    if (e.button !== 0) return;
+    filterDragged = false;
+    startX = e.clientX;
+    startScroll = bar.scrollLeft;
+    bar.style.cursor = 'grabbing';
+
+    function onMove(ev) {
+      var dx = ev.clientX - startX;
+      if (Math.abs(dx) > 3) filterDragged = true;
+      bar.scrollLeft = startScroll - dx;
+    }
+    function onUp() {
+      bar.style.cursor = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+})();
 
 // ── Add / Edit Form ──
 var addForm = document.getElementById('add-form');
@@ -500,7 +577,10 @@ function openAddForm(folderId) {
   document.getElementById('btn-save').textContent = t('save');
   populateFolderSelect(folderId || null);
   buildSwatches(document.getElementById('f-colors'), null);
+  document.getElementById('form-extras').classList.remove('open');
+  document.getElementById('btn-more-options').textContent = t('moreOptions');
   addForm.classList.add('open');
+  document.getElementById('add-link-wrap').style.display = 'none';
 
   var urlInput = document.getElementById('f-url');
   if (currentTabUrl.includes('notion.so') || currentTabUrl.includes('notion.com')) {
@@ -509,26 +589,17 @@ function openAddForm(folderId) {
   urlInput.focus();
 }
 
-document.getElementById('btn-add').addEventListener('click', function () {
-  var isOpen = addForm.classList.contains('open');
-  if (isOpen && !editingId) {
-    addForm.classList.remove('open');
-    clearForm();
-    return;
-  }
-  openAddForm(null);
-});
-
 document.getElementById('btn-cancel').addEventListener('click', function () {
   editingId = null;
   document.getElementById('btn-save').textContent = t('save');
   addForm.classList.remove('open');
+  document.getElementById('add-link-wrap').style.display = '';
   clearForm();
 });
 
 document.getElementById('btn-save').addEventListener('click', saveForm);
 
-['f-emoji','f-name','f-url'].forEach(function (id) {
+['f-name','f-url'].forEach(function (id) {
   document.getElementById(id).addEventListener('keydown', function (e) {
     if (e.key === 'Enter') saveForm();
     if (e.key === 'Escape') {
@@ -541,7 +612,6 @@ document.getElementById('btn-save').addEventListener('click', saveForm);
 });
 
 async function saveForm() {
-  var emoji = document.getElementById('f-emoji').value.trim();
   var name  = document.getElementById('f-name').value.trim();
   var url   = document.getElementById('f-url').value.trim();
 
@@ -578,13 +648,13 @@ async function saveForm() {
     if (ws) {
       ws.name = name;
       ws.url = url;
-      ws.emoji = emoji || null;
       ws.folderId = folderId;
       ws.colorId = colorId;
       ws.expireAt = expireAt;
+      if (!ws.emoji) ws.emoji = randomEmoji();
     }
   } else {
-    workspaces.push({ id: Date.now().toString(), name: name, url: url, emoji: emoji || null, folderId: folderId, colorId: colorId, expireAt: expireAt });
+    workspaces.push({ id: Date.now().toString(), name: name, url: url, emoji: randomEmoji(), folderId: folderId, colorId: colorId, expireAt: expireAt });
   }
 
   await saveWorkspaces(workspaces);
@@ -592,13 +662,14 @@ async function saveForm() {
   editingId = null;
   document.getElementById('btn-save').textContent = t('save');
   addForm.classList.remove('open');
+  document.getElementById('add-link-wrap').style.display = '';
   clearForm();
   applyFilter();
   updateCount();
 }
 
 function clearForm() {
-  ['f-emoji','f-name','f-url'].forEach(function (id) {
+  ['f-name','f-url'].forEach(function (id) {
     var el = document.getElementById(id);
     el.value = '';
     el.classList.remove('error');
@@ -607,9 +678,7 @@ function clearForm() {
   document.getElementById('custom-days-row').style.display = 'none';
   var customDays = document.getElementById('f-custom-days');
   if (customDays) { customDays.value = ''; customDays.classList.remove('error'); }
-  var folderEmoji = document.getElementById('f-folder-emoji');
   var folderName = document.getElementById('f-folder-name');
-  if (folderEmoji) folderEmoji.value = '';
   if (folderName) folderName.value = '';
   var newFolderRow = document.getElementById('new-folder-row');
   if (newFolderRow) newFolderRow.style.display = 'none';

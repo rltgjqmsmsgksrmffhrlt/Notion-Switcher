@@ -136,19 +136,22 @@ window.Settings = (function () {
 
     overlay.querySelector('.set-panel').innerHTML =
       '<div class="set-title-row"><div class="set-title">' + t('settingsTitle') + '</div>' +
-        '<button class="btn-icon" data-close="1" title="' + t('close') + '">✕</button></div>' +
+        '<div style="display:flex;align-items:center;gap:4px">' +
+          '<button class="btn-icon" data-restart-onboarding="1" title="' + t('obRestart') + '" style="font-size:13px;width:24px;height:24px;opacity:0.5">?</button>' +
+          '<button class="btn-icon" data-close="1" title="' + t('close') + '">✕</button>' +
+        '</div>' +
+      '</div>' +
       '<div class="set-section">' +
         '<div class="set-h">' + t('theme') + '</div>' +
         '<div class="seg" data-seg="theme">' + seg + '</div>' +
       '</div>' +
       '<div class="set-section">' +
-        '<label class="set-check-row">' +
-          '<span>' + t('hideUncategorized') + '</span>' +
-          '<input type="checkbox" id="chk-hide-uncat"' + hideChecked + '>' +
-        '</label>' +
-      '</div>' +
-      '<div class="set-section" id="clear-section">' +
-        '<button class="sc-danger-btn" data-clear-all="1">' + t('clearAll') + '</button>' +
+        '<div class="tip-card">' +
+          '<div class="tip-emoji">💬</div>' +
+          '<div class="tip-title">' + t('feedbackTitle') + '</div>' +
+          '<div class="tip-desc">' + t('feedbackDesc') + '</div>' +
+          '<iframe data-tally-src="https://tally.so/embed/9qxE61?alignLeft=1&hideTitle=1&transparentBackground=1" loading="lazy" width="100%" height="340" frameborder="0" marginheight="0" marginwidth="0" title="Feedback" scrolling="no" style="border:none;border-radius:var(--r-md);margin-top:10px;overflow:hidden;background:#fff"></iframe>' +
+        '</div>' +
       '</div>' +
       '<div class="set-section">' +
         '<div class="set-h">' + t('shortcuts') + '</div>' + rows +
@@ -156,6 +159,9 @@ window.Settings = (function () {
       '<div class="set-section set-bottom">' +
         '<button class="sc-chrome-btn" data-chrome="1">' + t('chromeShortcuts') + '</button>' +
         '<div class="sc-note">' + t('chromeShortcutsNote') + '</div>' +
+      '</div>' +
+      '<div class="set-section" id="clear-section">' +
+        '<button class="sc-danger-btn" data-clear-all="1">' + t('clearAll') + '</button>' +
       '</div>' +
       '<div class="set-section">' +
         '<div class="tip-card">' +
@@ -172,14 +178,6 @@ window.Settings = (function () {
           '</div>' +
           '<div class="tip-qr-hint">' + t('tipQrHint') + '</div>' +
           '<div class="tip-account" data-copy-account="1">' + t('tipAccount') + ' <span class="tip-copy">' + t('copy') + '</span></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="set-section">' +
-        '<div class="tip-card">' +
-          '<div class="tip-emoji">💬</div>' +
-          '<div class="tip-title">' + t('feedbackTitle') + '</div>' +
-          '<div class="tip-desc">' + t('feedbackDesc') + '</div>' +
-          '<iframe data-tally-src="https://tally.so/embed/9qxE61?alignLeft=1&hideTitle=1&transparentBackground=1" loading="lazy" width="100%" height="340" frameborder="0" marginheight="0" marginwidth="0" title="Feedback" scrolling="no" style="border:none;border-radius:var(--r-md);margin-top:10px;overflow:hidden;background:#fff"></iframe>' +
         '</div>' +
       '</div>';
   }
@@ -250,6 +248,13 @@ window.Settings = (function () {
         };
       };
     }
+    var obBtn = overlay.querySelector('[data-restart-onboarding]');
+    if (obBtn) {
+      obBtn.onclick = function () {
+        close();
+        if (window.Onboarding) Onboarding.restart();
+      };
+    }
     overlay.querySelectorAll('[data-edit]').forEach(function (b) {
       b.onclick = function () {
         if (recording && recording.id === b.dataset.edit) { stopRecording(); render(); bind(); }
@@ -287,11 +292,7 @@ window.Settings = (function () {
     if (!window.__tallyResize) {
       window.__tallyResize = true;
       window.addEventListener('message', function (e) {
-        if (e.data && e.data.event === 'Tally.FormLoaded') {
-          var f = overlay && overlay.querySelector('iframe[data-tally-src]');
-          if (f) f.style.height = (e.data.payload && e.data.payload.height || 300) + 'px';
-        }
-        if (e.data && e.data.event === 'Tally.ResizeFrame') {
+        if (e.data && (e.data.event === 'Tally.FormLoaded' || e.data.event === 'Tally.ResizeFrame')) {
           var f = overlay && overlay.querySelector('iframe[data-tally-src]');
           if (f) f.style.height = (e.data.payload && e.data.payload.height || 300) + 'px';
         }

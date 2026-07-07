@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Notion Workspace Switcher"
+    "message": "Notion Switcher"
   },
   "extDescription": {
     "message": "Quickly switch between Notion workspaces"
@@ -19,6 +19,15 @@
   },
   "searchPlaceholder": {
     "message": "Search or press 1-9 to jump"
+  },
+  "addLink": {
+    "message": "Add Link"
+  },
+  "moreOptions": {
+    "message": "▸ More options"
+  },
+  "lessOptions": {
+    "message": "▾ Less"
   },
   "searchPlaceholderDash": {
     "message": "Search workspaces... (press 1-9 to jump)"
@@ -66,7 +75,7 @@
     "message": "Edit Workspace"
   },
   "kbdHint": {
-    "message": "Press 1-9 to jump · Enter first result · Shift+click new tab"
+    "message": "Press 1-9 to jump"
   },
   "countSuffix": {
     "message": "$COUNT$",
@@ -100,6 +109,9 @@
   },
   "addHere": {
     "message": "Add here"
+  },
+  "addBelow": {
+    "message": "Add below"
   },
   "dragToSort": {
     "message": "Drag to reorder"
@@ -301,5 +313,38 @@
   },
   "showUncategorized": {
     "message": "Show uncategorized"
+  },
+  "obWelcomeTitle": {
+    "message": "First time here? Let's go!"
+  },
+  "obWelcomeDesc": {
+    "message": "Takes 30 seconds. I'll walk you through the essentials."
+  },
+  "obStart": {
+    "message": "Let's start"
+  },
+  "obTip1": {
+    "message": "Add Notion links here"
+  },
+  "obTip2": {
+    "message": "Create folders to organize"
+  },
+  "obTip3": {
+    "message": "Press 1~9 to jump instantly"
+  },
+  "obTip4": {
+    "message": "Settings & Dashboard"
+  },
+  "obNext": {
+    "message": "Next"
+  },
+  "obSkip": {
+    "message": "Skip"
+  },
+  "obDone": {
+    "message": "Done"
+  },
+  "obRestart": {
+    "message": "Replay guide"
   }
 }
