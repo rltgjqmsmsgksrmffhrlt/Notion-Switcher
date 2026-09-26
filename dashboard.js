@@ -288,7 +288,7 @@ function renderCard(ws, idx) {
   var icon = ws.emoji
     ? '<span class="emoji">' + esc(ws.emoji) + '</span>'
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
-  var badge = (idx >= 0 && idx < 9) ? '<div class="card-badge">' + (idx + 1) + '</div>' : '';
+  var badge = (idx >= 0 && idx < 9) ? '<div class="card-badge' + (idx === 0 ? ' is-first' : '') + '">' + (idx + 1) + '</div>' : '';
 
   var days = remainingDays(ws.expireAt);
   var expireBadge = days !== null
@@ -302,7 +302,7 @@ function renderCard(ws, idx) {
       '<button class="card-action-btn del" data-action="delete" data-id="' + esc(ws.id) + '" title="' + esc(t('deleteBtn')) + '">✕</button>' +
     '</div>' +
     badge +
-    '<div class="card-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
+    '<div class="card-icon" style="background:' + tile[0] + ';color:' + tile[1] + '">' + icon + '</div>' +
     '<div class="card-name">' + esc(ws.name) + '</div>' +
     expireBadge +
     '<div class="card-url">' + typeChip(ws.url) + esc(Launch.display(ws.url, 40)) + '</div>' +

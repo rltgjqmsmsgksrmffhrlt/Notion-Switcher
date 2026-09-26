@@ -198,7 +198,7 @@ function renderItem(ws, idx) {
     ? '<span>' + esc(ws.emoji) + '</span>'
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
   var isActive = currentTabUrl && /^https?:/.test(ws.url) && currentTabUrl.startsWith(ws.url.split('?')[0]);
-  var badge = (idx >= 0 && idx < 9) ? '<div class="ws-badge">' + (idx + 1) + '</div>' : '';
+  var badge = (idx >= 0 && idx < 9) ? '<div class="ws-badge' + (idx === 0 ? ' is-first' : '') + '">' + (idx + 1) + '</div>' : '';
   var days = remainingDays(ws.expireAt);
   var expireBadge = days !== null
     ? '<span class="expire-badge">' + (days === 0 ? esc(t('expiresToday')) : esc(t('expiresIn', [String(days)]))) + '</span>'
@@ -211,7 +211,7 @@ function renderItem(ws, idx) {
       '<button class="g-btn g-add" data-action="add" data-folder="' + esc(ws.folderId || '') + '" title="' + esc(t('addBelow')) + '" tabindex="-1">＋</button>' +
       '<span class="g-btn g-handle" draggable="true" title="' + esc(t('dragToSort')) + '" tabindex="-1">⠿</span>' +
     '</div>' +
-    '<div class="ws-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
+    '<div class="ws-icon" style="background:' + tile[0] + ';color:' + tile[1] + '">' + icon + '</div>' +
     '<div class="ws-info">' +
       '<div class="ws-name">' + esc(ws.name) + expireBadge + '</div>' +
       '<div class="ws-url">' + typeChip(ws.url) + esc(Launch.display(ws.url, 30)) + '</div>' +

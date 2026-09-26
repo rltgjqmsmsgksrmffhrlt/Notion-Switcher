@@ -33,6 +33,14 @@ Notion 전환기 → 웹 문서·앱·로컬 파일을 프로젝트 단위로 �
 - 아이콘 교체: `icons/baobab.svg` 원본 → `icon16/48/128.png` 렌더링 (16px는 나무만 크롭), `notion-cube.*` 삭제
 - 대시보드 배경: 떨어지는 큐브 → 흔들리며 떨어지는 잎 (`icons/leaf.svg`)
 
+**6. 디자인 시스템 적용 (Dawn / Night)**
+- `styles/tokens.css`를 Baobab 디자인 시스템 값으로 교체: 라이트 Dawn, 다크 Night(밤하늘), `line-control`·`on-accent`·`star`·`autumn`·`scrim` 등 신규 토큰
+- 하드코딩 색 제거: 버튼 `#fff` → `on-accent`, 만료 배지 주황 폴백 → `autumn`, danger 폴백, 온보딩 파란 그림자, 오버레이 → `scrim`
+- 입력·필 버튼 테두리를 `line-control`(3:1)로, components.css의 옛 다크 오버라이드 블록 삭제 (토큰이 담당)
+- 단축키 배지 → "별": `star-soft` 배경, 첫 번째(Enter 대상)는 채워진 `star`
+- 디스플레이 서체 Gowun Batang 서브셋 번들(`fonts/`, OFL): 대시보드 제목·빈 화면 제목
+- 버그 수정: 다크에서 텍스트로 렌더링되는 이모지가 흐려지던 문제(타일 전경색 지정), 카드 안 만료 배지가 가로로 늘어나던 문제
+
 ### 변경 파일
 
 - `launch.js` (신규), `popup.js`, `dashboard.js`, `popup.html`, `dashboard.html`

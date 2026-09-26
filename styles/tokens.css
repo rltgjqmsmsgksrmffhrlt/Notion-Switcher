@@ -1,35 +1,63 @@
 /* ============================================================
-   Workspace UI — Design Tokens
-   An original, light "productivity workspace" system
-   (clean, neutral, pastel tiles) used across the
-   Baobab popup + dashboard.
+   Baobab — Design Tokens
+   Two themes from the Baobab design system:
+     Dawn  (light, default :root) — dawn paper, night-blue ink
+     Night (dark, data-theme="dark") — night sky over a small planet
+   Names are shared with the design system's tokens.json.
    ============================================================ */
 
+@font-face {
+  font-family: "Gowun Batang";
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/gowun-batang-400-subset.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Gowun Batang";
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/gowun-batang-700-subset.woff2") format("woff2");
+}
+
 :root {
-  /* ---- Neutrals (warm near-black ink on paper white) ---- */
-  --ink:            #37352f;   /* primary text */
-  --ink-2:          rgba(55, 53, 47, 0.65);  /* secondary text */
-  --ink-3:          rgba(55, 53, 47, 0.45);  /* tertiary / urls */
-  --ink-4:          rgba(55, 53, 47, 0.30);  /* faint / placeholder */
+  /* ---- Surfaces ---- */
+  --paper:          #fbfaf7;   /* base surface: pages, cards, modals */
+  --paper-2:        #f5f3ec;   /* sunken / forms */
+  --field:          #eeebe2;   /* search & input fill, count pills */
 
-  --paper:          #ffffff;   /* base surface */
-  --paper-2:        #fbfbfa;   /* sunken / forms */
-  --field:          #f1f1ef;   /* search & input fill */
+  --hover:          rgba(30, 36, 64, 0.055); /* row hover */
+  --hover-2:        rgba(30, 36, 64, 0.09);  /* button hover, type chip */
+  --line:           rgba(30, 36, 64, 0.10);  /* hairline borders */
+  --line-2:         rgba(30, 36, 64, 0.16);  /* stronger decorative border */
+  --line-control:   rgba(30, 36, 64, 0.50);  /* borders that identify a control (3:1) */
 
-  --hover:          rgba(55, 53, 47, 0.055); /* row hover */
-  --hover-2:        rgba(55, 53, 47, 0.09);  /* button hover */
-  --line:           rgba(55, 53, 47, 0.09);  /* hairline borders */
-  --line-2:         rgba(55, 53, 47, 0.16);  /* stronger border */
+  /* ---- Ink ---- */
+  --ink:            #1e2440;                 /* primary text */
+  --ink-2:          rgba(30, 36, 64, 0.74);  /* secondary text */
+  --ink-3:          rgba(30, 36, 64, 0.66);  /* tertiary / urls (4.5:1 on paper) */
+  --ink-4:          rgba(30, 36, 64, 0.36);  /* placeholder / disabled only */
 
-  /* ---- Accent (selection / focus / drop-line) ---- */
-  --accent:         #2F80ED;
-  --accent-soft:    rgba(47, 128, 237, 0.10);
-  --danger:         #e03e3e;
-  --danger-soft:    rgba(224, 62, 62, 0.10);
+  /* ---- Accent + brand ---- */
+  --accent:         #34489a;   /* twilight blue: primary, focus, selection */
+  --accent-soft:    rgba(52, 72, 154, 0.12);
+  --on-accent:      #ffffff;
+  --night:          #1e2440;   /* brand night sky (fields, not text) */
+  --star:           #e2a42a;   /* starlight gold: hotkey stars (a fill in Dawn) */
+  --star-soft:      rgba(226, 164, 42, 0.20);
+  --on-star:        #1e2440;
+  --danger:         #b8323f;   /* the rose */
+  --danger-soft:    rgba(184, 50, 63, 0.12);
+  --rose:           var(--danger);
+  --baobab:         #356f4c;   /* canopy green: trees, success */
+  --bark:           #7a4e32;   /* trunk brown */
+  --sand:           #eadfc8;   /* planet sand */
+  --autumn:         #9a4f16;   /* fallen leaf: expiring leaves, warnings */
+  --autumn-soft:    rgba(154, 79, 22, 0.12);
 
   /* ---- Type ---- */
   --font: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
           "Apple SD Gothic Neo", "Helvetica Neue", "Malgun Gothic", sans-serif;
+  --font-display: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", Georgia, serif;
   --mono: "SF Mono", "JetBrains Mono", ui-monospace, "Consolas", monospace;
 
   --t-label:  11px;  /* uppercase section labels */
@@ -43,10 +71,12 @@
   --r-md: 8px;
   --r-lg: 12px;
   --r-xl: 16px;
+  --r-pill: 999px;
 
   /* ---- Elevation ---- */
-  --shadow-pop:  0 0 0 1px rgba(15,15,15,0.04), 0 5px 18px rgba(15,15,15,0.10);
-  --shadow-card: 0 1px 2px rgba(15,15,15,0.05), 0 6px 18px rgba(15,15,15,0.08);
+  --shadow-pop:  0 0 0 1px rgba(30, 36, 64, 0.05), 0 6px 20px rgba(30, 36, 64, 0.12);
+  --shadow-card: 0 1px 2px rgba(30, 36, 64, 0.05), 0 6px 18px rgba(30, 36, 64, 0.08);
+  --scrim:       rgba(15, 20, 38, 0.34);
 
   /* ---- Spacing rhythm ---- */
   --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;
@@ -54,39 +84,50 @@
 }
 
 /* ============================================================
-   Pastel icon-tile palette (hashed by workspace name).
-   Each tile = soft tint background + saturated foreground glyph.
-   Mirrors the calm, colorful block-icon language of the mock.
-   ============================================================ */
-/* ============================================================
-   Dark theme — same system, inverted neutrals.
-   Accent + pastel tiles stay self-consistent across themes.
-   Applied via <html data-theme="dark">.
+   Night — the sky over a small planet. Not an inverted Dawn.
+   Applied via <html data-theme="dark"> (ui.js Theme).
    ============================================================ */
 :root[data-theme="dark"] {
-  --ink:     #e9e9e7;
-  --ink-2:   rgba(255, 255, 255, 0.66);
-  --ink-3:   rgba(255, 255, 255, 0.44);
-  --ink-4:   rgba(255, 255, 255, 0.28);
+  color-scheme: dark;
 
-  --paper:   #1f1f1f;
-  --paper-2: #191919;
-  --field:   #2b2b2b;
+  --paper:   #131a2e;
+  --paper-2: #0f1426;
+  --field:   #1c2340;
 
-  --hover:   rgba(255, 255, 255, 0.055);
-  --hover-2: rgba(255, 255, 255, 0.09);
-  --line:    rgba(255, 255, 255, 0.07);
-  --line-2:  rgba(255, 255, 255, 0.11);
+  --hover:        rgba(236, 231, 218, 0.06);
+  --hover-2:      rgba(236, 231, 218, 0.10);
+  --line:         rgba(236, 231, 218, 0.09);
+  --line-2:       rgba(236, 231, 218, 0.16);
+  --line-control: rgba(236, 231, 218, 0.38);
 
-  --accent:      #5B9EF4;
-  --accent-soft: rgba(91, 158, 244, 0.16);
-  --danger:      #ff7a7a;
-  --danger-soft: rgba(255, 122, 122, 0.14);
+  --ink:     #ece7da;
+  --ink-2:   rgba(236, 231, 218, 0.74);
+  --ink-3:   rgba(236, 231, 218, 0.60);
+  --ink-4:   rgba(236, 231, 218, 0.34);
 
-  --shadow-pop:  0 0 0 1px rgba(0,0,0,0.5), 0 6px 22px rgba(0,0,0,0.55);
-  --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 6px 18px rgba(0,0,0,0.4);
+  --accent:      #9aacf2;
+  --accent-soft: rgba(154, 172, 242, 0.18);
+  --on-accent:   #0f1426;
+  --night:       #2a3563;
+  --star:        #f0c35a;
+  --star-soft:   rgba(240, 195, 90, 0.16);
+  --on-star:     #0f1426;
+  --danger:      #ff8f99;
+  --danger-soft: rgba(255, 143, 153, 0.14);
+  --baobab:      #7cc495;
+  --bark:        #c99c76;
+  --sand:        #3b3550;
+  --autumn:      #f0a35e;
+  --autumn-soft: rgba(240, 163, 94, 0.14);
+
+  --shadow-pop:  0 0 0 1px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(4, 6, 16, 0.6);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(4, 6, 16, 0.45);
+  --scrim:       rgba(4, 6, 16, 0.55);
 }
 
+/* ============================================================
+   Leaf icon tiles (ui.js TILES mirrors these). Same in both themes.
+   ============================================================ */
 :root {
   --tile-orange-bg: #fbecdd; --tile-orange-fg: #cc7722;
   --tile-blue-bg:   #e7f1fb; --tile-blue-fg:   #2f77c4;
