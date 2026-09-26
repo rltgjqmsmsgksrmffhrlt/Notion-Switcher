@@ -3,13 +3,13 @@
     "message": "Notion Switcher"
   },
   "extDescription": {
-    "message": "Quickly switch between Notion workspaces"
+    "message": "Project launcher: open docs, web pages, apps and files per project in one keystroke"
   },
   "commandPopup": {
-    "message": "Open Notion Switcher popup"
+    "message": "Open launcher popup"
   },
   "commandDashboard": {
-    "message": "Open Notion dashboard"
+    "message": "Open project dashboard"
   },
   "dashboard": {
     "message": "Dashboard ↗"
@@ -30,7 +30,7 @@
     "message": "▾ Less"
   },
   "searchPlaceholderDash": {
-    "message": "Search workspaces... (press 1-9 to jump)"
+    "message": "Search items & projects... (1–9 to jump)"
   },
   "workspaceName": {
     "message": "Name (random if empty)"
@@ -45,16 +45,16 @@
     "message": "Expiry"
   },
   "clearAll": {
-    "message": "Delete all workspaces"
+    "message": "Delete all items"
   },
   "clearAllConfirm": {
-    "message": "All workspaces and folders\nwill be permanently deleted."
+    "message": "All items and projects will be\npermanently deleted."
   },
   "clearAllYes": {
     "message": "Delete"
   },
   "newFolderName": {
-    "message": "New folder name"
+    "message": "New project name"
   },
   "add": {
     "message": "Add"
@@ -69,10 +69,10 @@
     "message": "Edit"
   },
   "addWorkspace": {
-    "message": "Add Workspace"
+    "message": "Add item"
   },
   "editWorkspace": {
-    "message": "Edit Workspace"
+    "message": "Edit item"
   },
   "kbdHint": {
     "message": "Press 1-9 to jump"
@@ -84,16 +84,16 @@
     }
   },
   "countWorkspaces": {
-    "message": "$COUNT$ workspaces",
+    "message": "$COUNT$ items",
     "placeholders": {
       "count": { "content": "$1" }
     }
   },
   "newFolderOption": {
-    "message": "+ New folder..."
+    "message": "+ New project..."
   },
   "emptyNoWorkspaces": {
-    "message": "No workspaces yet"
+    "message": "No items yet"
   },
   "emptyNoResults": {
     "message": "No results found"
@@ -102,7 +102,7 @@
     "message": "Add one with the + button below"
   },
   "emptyAddHintDash": {
-    "message": "Register your Notion workspaces using the + Add button above."
+    "message": "Use the + Add button to register web docs, app links, or local files."
   },
   "emptySearchHint": {
     "message": "Try a different keyword"
@@ -129,22 +129,22 @@
     "message": "Delete"
   },
   "folderAdd": {
-    "message": "Add Folder"
+    "message": "Add project"
   },
   "folderEdit": {
-    "message": "Edit Folder"
+    "message": "Edit project"
   },
   "folderName": {
-    "message": "Folder name"
+    "message": "Project name"
   },
   "folderBtn": {
-    "message": "📁 Folder"
+    "message": "📁 Project"
   },
   "addBtn": {
     "message": "+ Add"
   },
   "dragToFolder": {
-    "message": "Drag workspaces to this folder"
+    "message": "Drag items into this project"
   },
   "auto": {
     "message": "Auto"
@@ -309,7 +309,7 @@
     "message": "Hide uncategorized"
   },
   "hideUncategorizedDisabled": {
-    "message": "Move all links to folders first"
+    "message": "Move all links to projects first"
   },
   "showUncategorized": {
     "message": "Show uncategorized"
@@ -324,10 +324,10 @@
     "message": "Let's start"
   },
   "obTip1": {
-    "message": "Add Notion links here"
+    "message": "Add a doc, app or file link"
   },
   "obTip2": {
-    "message": "Create folders to organize"
+    "message": "Group them into projects"
   },
   "obTip3": {
     "message": "Press 1~9 to jump instantly"
@@ -346,5 +346,35 @@
   },
   "obRestart": {
     "message": "Replay guide"
+  },
+  "urlPlaceholder": {
+    "message": "URL · file path · app link (vscode://…)"
+  },
+  "typeWeb": {
+    "message": "Web"
+  },
+  "typeNotion": {
+    "message": "Notion"
+  },
+  "typeGoogle": {
+    "message": "Google"
+  },
+  "typeOffice": {
+    "message": "Office"
+  },
+  "typeDesign": {
+    "message": "Design"
+  },
+  "typeCode": {
+    "message": "Code"
+  },
+  "typeTask": {
+    "message": "Tasks"
+  },
+  "typeApp": {
+    "message": "App"
+  },
+  "typeFile": {
+    "message": "File"
   }
 }

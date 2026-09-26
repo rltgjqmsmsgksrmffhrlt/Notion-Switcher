@@ -15,14 +15,6 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function shortUrl(url) {
-  try {
-    var u = new URL(url);
-    var path = u.pathname.replace(/\/$/, '');
-    return (u.hostname.replace(/^www\./, '')) + path.slice(0, 26) + (path.length > 26 ? '…' : '');
-  } catch (e) { return url.slice(0, 34); }
-}
-
 async function loadWorkspaces() {
   return new Promise(function (r) { chrome.storage.sync.get(['workspaces'], function (d) { r(d.workspaces || []); }); });
 }
@@ -64,8 +56,8 @@ async function createNewFolder() {
 }
 
 function smartOpen(url) {
-  chrome.tabs.create({ url: url });
-  window.close();
+  // close only after the launch call is dispatched, or the popup would cancel it
+  Launch.open(url).then(function () { window.close(); });
 }
 
 function loadSettings() {
@@ -115,19 +107,6 @@ var RANDOM_EMOJI = [
 
 function randomEmoji() {
   return RANDOM_EMOJI[Math.floor(Math.random() * RANDOM_EMOJI.length)];
-}
-
-function autoName(url) {
-  try {
-    var u = new URL(url);
-    var path = u.pathname.replace(/^\//, '').replace(/-/g, ' ').replace(/\/$/, '');
-    if (path) {
-      var segments = path.split('/');
-      var last = segments[segments.length - 1].replace(/[a-f0-9]{32}$/i, '').replace(/-+$/, '').trim();
-      if (last) return last.charAt(0).toUpperCase() + last.slice(1);
-    }
-  } catch (e) {}
-  return randomName();
 }
 
 var workspaces = [];
@@ -218,7 +197,7 @@ function renderItem(ws, idx) {
   var icon = ws.emoji
     ? '<span>' + esc(ws.emoji) + '</span>'
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
-  var isActive = currentTabUrl && ws.url && currentTabUrl.startsWith(ws.url.split('?')[0]);
+  var isActive = currentTabUrl && /^https?:/.test(ws.url) && currentTabUrl.startsWith(ws.url.split('?')[0]);
   var badge = (idx >= 0 && idx < 9) ? '<div class="ws-badge">' + (idx + 1) + '</div>' : '';
   var days = remainingDays(ws.expireAt);
   var expireBadge = days !== null
@@ -235,7 +214,7 @@ function renderItem(ws, idx) {
     '<div class="ws-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
     '<div class="ws-info">' +
       '<div class="ws-name">' + esc(ws.name) + expireBadge + '</div>' +
-      '<div class="ws-url">' + esc(shortUrl(ws.url)) + '</div>' +
+      '<div class="ws-url">' + typeChip(ws.url) + esc(Launch.display(ws.url, 30)) + '</div>' +
     '</div>' +
     '<div class="ws-meta">' +
       '<div class="ws-actions">' +
@@ -245,6 +224,10 @@ function renderItem(ws, idx) {
       badge +
     '</div>' +
   '</div>';
+}
+
+function typeChip(url) {
+  return '<span class="type-chip" title="' + esc(Launch.label(url)) + '">' + Launch.icon(url) + ' ' + esc(Launch.label(url)) + '</span>';
 }
 
 function renderList() {
@@ -583,8 +566,9 @@ function openAddForm(folderId) {
   document.getElementById('add-link-wrap').style.display = 'none';
 
   var urlInput = document.getElementById('f-url');
-  if (currentTabUrl.includes('notion.so') || currentTabUrl.includes('notion.com')) {
-    if (!urlInput.value) urlInput.value = currentTabUrl.split('?')[0];
+  if (/^https?:\/\//.test(currentTabUrl) && !urlInput.value) {
+    // Notion page ids live in the path; query strings there are view state only
+    urlInput.value = Launch.detect(currentTabUrl) === 'notion' ? currentTabUrl.split('?')[0] : currentTabUrl;
   }
   urlInput.focus();
 }
@@ -618,11 +602,10 @@ async function saveForm() {
   var fUrl  = document.getElementById('f-url');
   fUrl.classList.remove('error');
 
+  url = Launch.normalize(url);
   if (!url)  { fUrl.classList.add('error'); fUrl.focus(); return; }
 
-  if (!/^https?:\/\//.test(url)) url = 'https://' + url;
-
-  if (!name) name = autoName(url);
+  if (!name) name = Launch.suggestName(url) || randomName();
 
   var folderId = document.getElementById('f-folder').value || null;
   if (folderId === '__new__') folderId = null;

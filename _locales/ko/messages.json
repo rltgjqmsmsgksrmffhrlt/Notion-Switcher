@@ -3,13 +3,13 @@
     "message": "Notion Switcher"
   },
   "extDescription": {
-    "message": "Notion 워크스페이스를 빠르게 전환하세요"
+    "message": "프로젝트별로 문서·웹·앱·파일을 한 번에 여는 런처"
   },
   "commandPopup": {
-    "message": "Notion Switcher 팝업 열기"
+    "message": "런처 팝업 열기"
   },
   "commandDashboard": {
-    "message": "Notion 대시보드 열기"
+    "message": "프로젝트 대시보드 열기"
   },
   "dashboard": {
     "message": "대시보드 ↗"
@@ -30,7 +30,7 @@
     "message": "▾ 접기"
   },
   "searchPlaceholderDash": {
-    "message": "워크스페이스 검색... (숫자 1~9로 바로 이동)"
+    "message": "항목·프로젝트 검색... (숫자 1~9로 바로 이동)"
   },
   "workspaceName": {
     "message": "이름 (비우면 랜덤 생성)"
@@ -48,13 +48,13 @@
     "message": "전체 리스트 삭제"
   },
   "clearAllConfirm": {
-    "message": "모든 워크스페이스와 폴더가\n영구 삭제됩니다."
+    "message": "모든 항목과 프로젝트가\n영구 삭제됩니다."
   },
   "clearAllYes": {
     "message": "삭제"
   },
   "newFolderName": {
-    "message": "새 폴더 이름"
+    "message": "새 프로젝트 이름"
   },
   "add": {
     "message": "추가"
@@ -69,10 +69,10 @@
     "message": "수정"
   },
   "addWorkspace": {
-    "message": "워크스페이스 추가"
+    "message": "항목 추가"
   },
   "editWorkspace": {
-    "message": "워크스페이스 편집"
+    "message": "항목 편집"
   },
   "kbdHint": {
     "message": "숫자 1~9 바로 이동"
@@ -84,16 +84,16 @@
     }
   },
   "countWorkspaces": {
-    "message": "$COUNT$개 워크스페이스",
+    "message": "$COUNT$개 항목",
     "placeholders": {
       "count": { "content": "$1" }
     }
   },
   "newFolderOption": {
-    "message": "＋ 새 폴더..."
+    "message": "＋ 새 프로젝트..."
   },
   "emptyNoWorkspaces": {
-    "message": "워크스페이스가 없습니다"
+    "message": "등록된 항목이 없습니다"
   },
   "emptyNoResults": {
     "message": "검색 결과 없음"
@@ -102,7 +102,7 @@
     "message": "아래 + 버튼으로 추가해보세요"
   },
   "emptyAddHintDash": {
-    "message": "상단 + 추가 버튼으로 Notion 워크스페이스를 등록해보세요."
+    "message": "상단 + 추가 버튼으로 웹 문서, 앱 링크, 로컬 파일을 등록해보세요."
   },
   "emptySearchHint": {
     "message": "다른 키워드로 검색해보세요"
@@ -129,22 +129,22 @@
     "message": "삭제"
   },
   "folderAdd": {
-    "message": "폴더 추가"
+    "message": "프로젝트 추가"
   },
   "folderEdit": {
-    "message": "폴더 편집"
+    "message": "프로젝트 편집"
   },
   "folderName": {
-    "message": "폴더 이름"
+    "message": "프로젝트 이름"
   },
   "folderBtn": {
-    "message": "📁 폴더"
+    "message": "📁 프로젝트"
   },
   "addBtn": {
     "message": "＋ 추가"
   },
   "dragToFolder": {
-    "message": "워크스페이스를 이 폴더로 드래그하세요"
+    "message": "항목을 이 프로젝트로 드래그하세요"
   },
   "auto": {
     "message": "자동"
@@ -324,10 +324,10 @@
     "message": "시작할게요"
   },
   "obTip1": {
-    "message": "노션 링크를 추가해요"
+    "message": "문서·앱·파일 링크를 추가해요"
   },
   "obTip2": {
-    "message": "폴더를 만들어 정리해요"
+    "message": "프로젝트를 만들어 묶어요"
   },
   "obTip3": {
     "message": "숫자키 1~9로 바로 이동"
@@ -346,5 +346,35 @@
   },
   "obRestart": {
     "message": "가이드 다시 보기"
+  },
+  "urlPlaceholder": {
+    "message": "URL · 파일 경로 · 앱 링크 (vscode://…)"
+  },
+  "typeWeb": {
+    "message": "웹"
+  },
+  "typeNotion": {
+    "message": "Notion"
+  },
+  "typeGoogle": {
+    "message": "Google"
+  },
+  "typeOffice": {
+    "message": "Office"
+  },
+  "typeDesign": {
+    "message": "디자인"
+  },
+  "typeCode": {
+    "message": "코드"
+  },
+  "typeTask": {
+    "message": "태스크"
+  },
+  "typeApp": {
+    "message": "앱"
+  },
+  "typeFile": {
+    "message": "파일"
   }
 }

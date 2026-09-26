@@ -37,12 +37,6 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function shortUrl(url) {
-  try {
-    const u = new URL(url);
-    return u.hostname + u.pathname.slice(0, 36) + (u.pathname.length > 36 ? '…' : '');
-  } catch { return url.slice(0, 44); }
-}
 
 // ── Storage ──
 async function loadWorkspaces() {
@@ -103,19 +97,6 @@ var RANDOM_EMOJI = [
 
 function randomEmoji() {
   return RANDOM_EMOJI[Math.floor(Math.random() * RANDOM_EMOJI.length)];
-}
-
-function autoName(url) {
-  try {
-    var u = new URL(url);
-    var path = u.pathname.replace(/^\//, '').replace(/-/g, ' ').replace(/\/$/, '');
-    if (path) {
-      var segments = path.split('/');
-      var last = segments[segments.length - 1].replace(/[a-f0-9]{32}$/i, '').replace(/-+$/, '').trim();
-      if (last) return last.charAt(0).toUpperCase() + last.slice(1);
-    }
-  } catch (e) {}
-  return randomName();
 }
 
 // ── State ──
@@ -324,8 +305,12 @@ function renderCard(ws, idx) {
     '<div class="card-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
     '<div class="card-name">' + esc(ws.name) + '</div>' +
     expireBadge +
-    '<div class="card-url">' + esc(shortUrl(ws.url)) + '</div>' +
+    '<div class="card-url">' + typeChip(ws.url) + esc(Launch.display(ws.url, 40)) + '</div>' +
   '</div>';
+}
+
+function typeChip(url) {
+  return '<span class="type-chip" title="' + esc(Launch.label(url)) + '">' + Launch.icon(url) + ' ' + esc(Launch.label(url)) + '</span>';
 }
 
 function renderFolderSection(folder, items, startIdx) {
@@ -567,7 +552,7 @@ function onCardClick(e) {
     return;
   }
   var url = e.currentTarget.dataset.url;
-  if (url) chrome.tabs.create({ url: url });
+  if (url) Launch.open(url);
 }
 
 async function deleteWs(id) {
@@ -592,7 +577,8 @@ function onSearch() { applyFilter(); }
 function applyFilter() {
   var q = document.getElementById('search').value.toLowerCase().trim();
   filtered = workspaces.filter(function (w) {
-    if (q && !(w.name.toLowerCase().includes(q) || w.url.toLowerCase().includes(q) || (w.emoji && w.emoji.includes(q)))) return false;
+    if (q && !(w.name.toLowerCase().includes(q) || w.url.toLowerCase().includes(q) ||
+      Launch.label(w.url).toLowerCase().includes(q) || (w.emoji && w.emoji.includes(q)))) return false;
     if (activeFilter && activeFilter !== '__expiry__') {
       if (activeFilter === '__unfiled__') return !w.folderId || !folders.some(function (f) { return f.id === w.folderId; });
       return w.folderId === activeFilter;
@@ -683,13 +669,13 @@ function onGlobalKey(e) {
     var idx = parseInt(e.key) - 1;
     if (idx < displayOrder.length) {
       e.preventDefault();
-      chrome.tabs.create({ url: displayOrder[idx].url });
+      Launch.open(displayOrder[idx].url);
     }
     return;
   }
 
   if (e.key === 'Enter' && document.activeElement === search && displayOrder.length > 0) {
-    chrome.tabs.create({ url: displayOrder[0].url });
+    Launch.open(displayOrder[0].url);
   }
 
   if (e.key === 'Escape' && document.activeElement === search) {
@@ -757,11 +743,10 @@ async function saveWs() {
   var fUrl = document.getElementById('m-url');
   fUrl.classList.remove('error');
 
+  url = Launch.normalize(url);
   if (!url) { fUrl.classList.add('error'); fUrl.focus(); return; }
 
-  if (!/^https?:\/\//.test(url)) url = 'https://' + url;
-
-  if (!name) name = autoName(url);
+  if (!name) name = Launch.suggestName(url) || randomName();
 
   var expireVal = document.getElementById('m-expire').value;
   var expireAt = null;

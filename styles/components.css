@@ -409,3 +409,16 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
     box-shadow: none;
   }
 }
+
+/* ── Item type chip (web / notion / app / file …) shown before the location ── */
+.type-chip {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--hover-2);
+  color: var(--ink-2);
+  font-size: 10px;
+  line-height: 15px;
+  vertical-align: 1px;
+}

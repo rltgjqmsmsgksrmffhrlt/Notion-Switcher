@@ -4,6 +4,38 @@ Notion Switcher 개발 기록.
 
 ---
 
+## 2026-09-26 — v4.0 시작: 프로젝트 중심 문서 런처로 확장
+
+Notion 전환기 → 웹 문서·앱·로컬 파일을 프로젝트 단위로 여는 런처로 방향 전환. 배경과 로드맵은 PRD §11.
+
+### 변경사항
+
+**1. `launch.js` 신규 — 항목 타입/실행 공용 모듈**
+- `Launch.normalize`: URL·파일 경로(Windows/UNC/POSIX)·앱 딥링크 입력을 실행 가능한 URL로 정규화, 위험 스킴 차단
+- `Launch.detect` / `label` / `icon`: URL로 타입 추론 (웹·Notion·Google·Office·디자인·코드·태스크·앱·파일). 저장 데이터 변경 없음 → v3 데이터 호환
+- `Launch.open`: 웹/파일은 새 탭, 앱 딥링크는 활성 탭에서 호출(빈 탭 방지), 파일 접근 권한 없으면 확장 상세 페이지 안내
+- `Launch.display` / `suggestName`: 경로는 파일명이 보이도록 뒤쪽 기준 축약, 이름 비우면 파일명/앱 이름 제안
+
+**2. 팝업·대시보드 연동**
+- 목록/카드에 타입 칩 표시, 모든 열기 동작을 `Launch.open`으로 통일
+- 팝업 "링크 추가"가 현재 탭이 어떤 웹 페이지든 자동 입력
+- 대시보드 검색이 타입/앱 이름도 매칭
+
+**3. 용어 전환 (ko/en)**
+- 워크스페이스 → 항목, 폴더 → 프로젝트. 확장 설명·단축키 설명 갱신. `extName`은 이름 확정 전까지 유지
+
+**4. 프리뷰**
+- `chrome-mock.js`: 새 타입 샘플 추가, http로 열면 실제 ko 문자열 로드
+
+### 변경 파일
+
+- `launch.js` (신규), `popup.js`, `dashboard.js`, `popup.html`, `dashboard.html`
+- `styles/components.css` — `.type-chip`
+- `_locales/ko/messages.json`, `_locales/en/messages.json`
+- `preview/*` , `PRD.md` (§11), `DEVLOG.md`
+
+---
+
 ## 2026-07-08 — v3.2 마무리: 버그 수정, 필터 드래그, 이름 변경
 
 ### 변경사항

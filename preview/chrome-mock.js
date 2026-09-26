@@ -13,6 +13,10 @@
       { id: '8', name: '독서 기록', url: 'https://www.notion.so/reading-list', emoji: '📚', folderId: null },
       { id: '9', name: '임시 회의록', url: 'https://www.notion.so/temp-meeting', emoji: '⏰', folderId: null, expireAt: Date.now() + 3 * 86400000 },
       { id: '10', name: '오늘 만료 링크', url: 'https://www.notion.so/expiring-today', emoji: '⚠️', folderId: 'f2', expireAt: Date.now() + 12 * 3600000 },
+      { id: '11', name: '요구사항 명세', url: 'https://docs.google.com/document/d/1abc', emoji: '📄', folderId: 'f1' },
+      { id: '12', name: '화면 설계', url: 'https://www.figma.com/file/xyz/app', emoji: '🎨', folderId: 'f1' },
+      { id: '13', name: '프론트엔드 코드', url: 'vscode://file/C:/dev/app', emoji: '💻', folderId: 'f1' },
+      { id: '14', name: '견적서', url: 'file:///C:/Users/me/Documents/%EA%B2%AC%EC%A0%81%EC%84%9C.xlsx', emoji: '📁', folderId: 'f1' },
     ],
     folders: [
       { id: 'f1', name: '프로덕트', emoji: '💼' },
@@ -29,6 +33,7 @@
 
   var localStore = { onboardingDone: true };
   var listeners = [];
+  var messages = null;
 
   function makeSyncLike(obj, persistFn) {
     return {
@@ -74,7 +79,28 @@
     },
     windows: { update: function () { return Promise.resolve(); } },
     runtime: { getURL: function (p) { return '../' + p; } },
-    i18n: { getMessage: function (key) { return ''; } },
+    i18n: {
+      // Serve the real ko strings when previews are opened over http (file:// blocks XHR).
+      getMessage: function (key, subs) {
+        if (!messages) {
+          messages = {};
+          try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '../_locales/ko/messages.json', false);
+            xhr.send();
+            messages = JSON.parse(xhr.responseText);
+          } catch (e) {}
+        }
+        var m = messages[key];
+        if (!m) return '';
+        subs = [].concat(subs || []);
+        return m.message.replace(/\$([A-Z_]+)\$/g, function (_, name) {
+          var ph = m.placeholders && m.placeholders[name.toLowerCase()];
+          var idx = ph ? parseInt(ph.content.slice(1), 10) - 1 : -1;
+          return idx >= 0 && subs[idx] != null ? subs[idx] : '';
+        });
+      }
+    },
     commands: { getAll: function (cb) { if (cb) setTimeout(function () { cb([]); }, 0); return Promise.resolve([]); } },
   };
 })();
