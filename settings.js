@@ -113,104 +113,6 @@ window.Settings = (function () {
     });
   }
 
-  // ── Backup: export to a JSON file / import one (merge or replace) ──
-  function isPopup() { return /popup/.test(location.pathname); }
-
-  function bkPanel() { return overlay.querySelector('[data-bk-panel]'); }
-
-  function bkMessage(text, isError) {
-    var el = bkPanel();
-    el.innerHTML = '<div class="bk-msg' + (isError ? ' is-error' : '') + '"></div>';
-    el.firstChild.textContent = text;
-  }
-
-  function exportBackup() {
-    Promise.all([Store.loadList('workspaces'), Store.loadList('folders'), loadAppSettings()]).then(function (r) {
-      var version = '';
-      try { version = chrome.runtime.getManifest().version; } catch (e) {}
-      var json = JSON.stringify(Backup.build(r[0], r[1], r[2], version), null, 2);
-      var url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = Backup.fileName();
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      bkMessage(t('exportDone', [String(r[0].length), String(r[1].length)]));
-    });
-  }
-
-  function showImportChoice(parsed) {
-    var el = bkPanel();
-    var summary = t('importSummary', [String(parsed.workspaces.length), String(parsed.folders.length)]);
-    el.innerHTML =
-      '<div class="bk-card">' +
-        '<div class="bk-summary"></div>' +
-        (parsed.skipped ? '<div class="bk-note">' + t('importSkipped', [String(parsed.skipped)]) + '</div>' : '') +
-        '<div class="bk-note">' + t('importReplaceWarn') + '</div>' +
-        '<div class="bk-actions">' +
-          '<button class="clear-cancel-btn" data-bk-cancel="1">' + t('cancel') + '</button>' +
-          '<button class="clear-cancel-btn" data-bk-replace="1">' + t('importReplace') + '</button>' +
-          '<button class="bk-primary" data-bk-merge="1">' + t('importMerge') + '</button>' +
-        '</div>' +
-      '</div>';
-    el.querySelector('.bk-summary').textContent = summary;
-    el.querySelector('[data-bk-cancel]').onclick = function () { el.innerHTML = ''; };
-    el.querySelector('[data-bk-merge]').onclick = function () {
-      Promise.all([Store.loadList('workspaces'), Store.loadList('folders')]).then(function (r) {
-        var m = Backup.merge(r[0], r[1], parsed);
-        return Promise.all([Store.saveList('folders', m.folders), Store.saveList('workspaces', m.workspaces)]).then(function () {
-          bkMessage(t('importMerged', [String(m.addedLeaves), String(m.addedTrees), String(m.duplicates)]));
-          renderStorageStatus();
-        });
-      });
-    };
-    el.querySelector('[data-bk-replace]').onclick = function () {
-      var saves = [Store.saveList('folders', parsed.folders), Store.saveList('workspaces', parsed.workspaces)];
-      if (parsed.settings) {
-        Object.keys(parsed.settings).forEach(function (k) { appSettings[k] = parsed.settings[k]; });
-        saves.push(saveAppSettings(appSettings));
-      }
-      Promise.all(saves).then(function () {
-        bkMessage(t('importReplaced', [String(parsed.workspaces.length), String(parsed.folders.length)]));
-        renderStorageStatus();
-      });
-    };
-  }
-
-  function bindBackup() {
-    var exp = overlay.querySelector('[data-export]');
-    var imp = overlay.querySelector('[data-import]');
-    var file = overlay.querySelector('[data-import-file]');
-    if (!exp || !window.Backup) return;
-    exp.onclick = exportBackup;
-    imp.onclick = function () {
-      // Chrome closes the popup when a file dialog opens, so import from the dashboard.
-      if (isPopup()) {
-        chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html#backup') });
-        window.close();
-        return;
-      }
-      file.value = '';
-      file.click();
-    };
-    file.onchange = function () {
-      var f = file.files && file.files[0];
-      if (!f) return;
-      f.text().then(function (text) {
-        var parsed;
-        try { parsed = Backup.parse(text); }
-        catch (e) {
-          var key = { notJson: 'importErrNotJson', newerVersion: 'importErrNewer' }[e.code] || 'importErrNotBackup';
-          bkMessage(t(key), true);
-          return;
-        }
-        showImportChoice(parsed);
-      });
-    };
-  }
-
   function close() {
     if (overlay) overlay.classList.remove('open');
     stopRecording();
@@ -277,18 +179,8 @@ window.Settings = (function () {
         '<button class="sc-chrome-btn" data-chrome="1">' + t('chromeShortcuts') + '</button>' +
         '<div class="sc-note">' + t('chromeShortcutsNote') + '</div>' +
       '</div>' +
-      '<div class="set-section" id="backup-section">' +
-        '<div class="set-h">' + t('backupTitle') + '</div>' +
-        '<div class="sc-note sc-storage" id="storage-status"></div>' +
-        '<div class="bk-desc">' + t('backupDesc') + '</div>' +
-        '<div class="bk-btns">' +
-          '<button class="sc-chrome-btn" data-export="1">' + t('exportBtn') + '</button>' +
-          '<button class="sc-chrome-btn" data-import="1">' + (isPopup() ? t('importInDashboard') : t('importBtn')) + '</button>' +
-        '</div>' +
-        '<input type="file" accept=".json,application/json" data-import-file="1" hidden>' +
-        '<div class="bk-panel" data-bk-panel="1"></div>' +
-      '</div>' +
       '<div class="set-section" id="clear-section">' +
+        '<div class="sc-note sc-storage" id="storage-status"></div>' +
         '<button class="sc-danger-btn" data-clear-all="1">' + t('clearAll') + '</button>' +
       '</div>' +
       '<div class="set-section">' +
@@ -358,7 +250,6 @@ window.Settings = (function () {
       };
     }
     renderStorageStatus();
-    bindBackup();
     var clearBtn = overlay.querySelector('[data-clear-all]');
     if (clearBtn) {
       clearBtn.onclick = function () {
@@ -430,7 +321,7 @@ window.Settings = (function () {
     }
   }
 
-  async function open(opts) {
+  async function open() {
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.className = 'set-overlay';
@@ -442,14 +333,6 @@ window.Settings = (function () {
     render();
     bind();
     overlay.classList.add('open');
-    if (opts && opts.section) {
-      var sec = overlay.querySelector('#' + opts.section + '-section');
-      if (sec) {
-        sec.scrollIntoView({ block: 'center' });
-        sec.classList.add('is-flash');
-        setTimeout(function () { sec.classList.remove('is-flash'); }, 1600);
-      }
-    }
   }
 
   var GEAR = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
@@ -461,7 +344,7 @@ window.Settings = (function () {
     mount: function (btn) {
       btn.innerHTML = GEAR;
       btn.title = t('settings');
-      btn.addEventListener('click', function () { open(); });
+      btn.addEventListener('click', open);
     }
   };
 })();
