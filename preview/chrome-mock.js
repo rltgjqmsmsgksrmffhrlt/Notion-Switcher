@@ -39,7 +39,7 @@
     return {
       get: function (keys, cb) {
         var out = {};
-        (Array.isArray(keys) ? keys : [keys]).forEach(function (k) { out[k] = obj[k]; });
+        (keys == null ? Object.keys(obj) : Array.isArray(keys) ? keys : [keys]).forEach(function (k) { if (k in obj) out[k] = obj[k]; });
         setTimeout(function () { cb(out); }, 0);
       },
       set: function (data, cb) {
@@ -57,6 +57,7 @@
       remove: function (key, cb) {
         var keys = Array.isArray(key) ? key : [key];
         keys.forEach(function (k) { delete obj[k]; });
+        if (persistFn) persistFn();
         setTimeout(function () { if (cb) cb(); }, 0);
       },
     };

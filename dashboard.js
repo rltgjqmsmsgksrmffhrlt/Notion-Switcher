@@ -40,16 +40,16 @@ function esc(str) {
 
 // ── Storage ──
 async function loadWorkspaces() {
-  return new Promise(function (r) { chrome.storage.sync.get(['workspaces'], function (d) { r(d.workspaces || []); }); });
+  return Store.loadList('workspaces');
 }
 async function saveWorkspaces(list) {
-  return new Promise(function (r) { chrome.storage.sync.set({ workspaces: list }, r); });
+  return Store.saveList('workspaces', list);
 }
 async function loadFolders() {
-  return new Promise(function (r) { chrome.storage.sync.get(['folders'], function (d) { r(d.folders || []); }); });
+  return Store.loadList('folders');
 }
 async function saveFolders(list) {
-  return new Promise(function (r) { chrome.storage.sync.set({ folders: list }, r); });
+  return Store.saveList('folders', list);
 }
 
 function loadSettings() {
@@ -181,16 +181,16 @@ async function init() {
     if (e.key === 'Escape') { e.preventDefault(); closeFolderModal(); }
   });
 
+  Store.onListChange('workspaces', function (list) {
+    workspaces = list;
+    applyFilter();
+    updateTotal();
+  });
+  Store.onListChange('folders', function (list) {
+    folders = list;
+    applyFilter();
+  });
   chrome.storage.onChanged.addListener(function (changes) {
-    if (changes.workspaces) {
-      workspaces = changes.workspaces.newValue || [];
-      applyFilter();
-      updateTotal();
-    }
-    if (changes.folders) {
-      folders = changes.folders.newValue || [];
-      applyFilter();
-    }
     if (changes.settings) {
       appSettings = changes.settings.newValue || {};
       applyFilter();

@@ -376,5 +376,18 @@
   },
   "typeFile": {
     "message": "파일"
+  },
+  "storageSync": {
+    "message": "저장 공간 $USED$ / $TOTAL$ · 기기 간 동기화 중",
+    "placeholders": {
+      "used": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "storageSyncOnly": {
+    "message": "기기 간 동기화 중"
+  },
+  "storageLocal": {
+    "message": "동기화 한도(100KB)를 넘어 이 기기에만 저장하고 있어요. 잎을 정리하면 다시 동기화돼요."
   }
 }

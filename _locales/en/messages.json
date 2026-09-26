@@ -376,5 +376,18 @@
   },
   "typeFile": {
     "message": "File"
+  },
+  "storageSync": {
+    "message": "Storage $USED$ of $TOTAL$ · syncing across devices",
+    "placeholders": {
+      "used": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "storageSyncOnly": {
+    "message": "Syncing across devices"
+  },
+  "storageLocal": {
+    "message": "Over the 100KB sync limit, so leaves are saved on this device only. Remove some and syncing resumes."
   }
 }
