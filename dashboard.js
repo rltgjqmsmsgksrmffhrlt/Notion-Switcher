@@ -144,6 +144,11 @@ async function init() {
 
   Theme.init();
   Settings.mount(document.getElementById('btn-settings'));
+  // the popup's "import" hands off here, since a file dialog would close the popup
+  if (location.hash === '#backup') {
+    history.replaceState(null, '', location.pathname);
+    Settings.open({ section: 'backup' });
+  }
   CustomSelect.enhance(document.getElementById('m-folder'));
 
   document.getElementById('m-expire').addEventListener('change', function () {

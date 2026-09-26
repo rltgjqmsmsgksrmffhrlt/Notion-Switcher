@@ -389,5 +389,73 @@
   },
   "storageLocal": {
     "message": "Over the 100KB sync limit, so leaves are saved on this device only. Remove some and syncing resumes."
+  },
+  "backupTitle": {
+    "message": "Backup"
+  },
+  "backupDesc": {
+    "message": "Save your leaves and trees to a JSON file, or bring in a file exported on another device."
+  },
+  "exportBtn": {
+    "message": "Export"
+  },
+  "importBtn": {
+    "message": "Import"
+  },
+  "importInDashboard": {
+    "message": "Import ↗"
+  },
+  "exportDone": {
+    "message": "Exported $LEAVES$ leaves and $TREES$ trees to a file.",
+    "placeholders": {
+      "leaves": { "content": "$1" },
+      "trees": { "content": "$2" }
+    }
+  },
+  "importSummary": {
+    "message": "$LEAVES$ leaves · $TREES$ trees",
+    "placeholders": {
+      "leaves": { "content": "$1" },
+      "trees": { "content": "$2" }
+    }
+  },
+  "importSkipped": {
+    "message": "Left out $COUNT$ links that can't be opened or have expired.",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "importReplaceWarn": {
+    "message": "Merge adds only leaves you don't have yet. Replace all swaps your current list for the file's."
+  },
+  "importMerge": {
+    "message": "Merge"
+  },
+  "importReplace": {
+    "message": "Replace all"
+  },
+  "importMerged": {
+    "message": "Added $LEAVES$ leaves and $TREES$ trees. Skipped $DUPES$ leaves you already had.",
+    "placeholders": {
+      "leaves": { "content": "$1" },
+      "trees": { "content": "$2" },
+      "dupes": { "content": "$3" }
+    }
+  },
+  "importReplaced": {
+    "message": "Replaced with the file: $LEAVES$ leaves, $TREES$ trees.",
+    "placeholders": {
+      "leaves": { "content": "$1" },
+      "trees": { "content": "$2" }
+    }
+  },
+  "importErrNotJson": {
+    "message": "This isn't a JSON file. Choose the .json file Baobab exported."
+  },
+  "importErrNotBackup": {
+    "message": "This isn't a Baobab backup. Choose a file made with Settings → Backup → Export."
+  },
+  "importErrNewer": {
+    "message": "This backup is from a newer Baobab. Update the extension, then import it again."
   }
 }
