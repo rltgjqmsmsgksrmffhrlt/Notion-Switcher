@@ -1,12 +1,12 @@
 'use strict';
 
-(function fallingCubes() {
-  var container = document.getElementById('falling-cubes');
+(function fallingLeaves() {
+  var container = document.getElementById('falling-leaves');
   if (!container) return;
   var COUNT = 14;
   for (var i = 0; i < COUNT; i++) {
     var cube = document.createElement('div');
-    cube.className = 'falling-cube';
+    cube.className = 'falling-leaf';
     var isGiant = Math.random() < 0.15;
     var size = isGiant ? 80 + Math.random() * 120 : 16 + Math.random() * 20;
     var left = Math.random() * 100;
@@ -37,25 +37,19 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function shortUrl(url) {
-  try {
-    const u = new URL(url);
-    return u.hostname + u.pathname.slice(0, 36) + (u.pathname.length > 36 ? '…' : '');
-  } catch { return url.slice(0, 44); }
-}
 
 // ── Storage ──
 async function loadWorkspaces() {
-  return new Promise(function (r) { chrome.storage.sync.get(['workspaces'], function (d) { r(d.workspaces || []); }); });
+  return Store.loadList('workspaces');
 }
 async function saveWorkspaces(list) {
-  return new Promise(function (r) { chrome.storage.sync.set({ workspaces: list }, r); });
+  return Store.saveList('workspaces', list);
 }
 async function loadFolders() {
-  return new Promise(function (r) { chrome.storage.sync.get(['folders'], function (d) { r(d.folders || []); }); });
+  return Store.loadList('folders');
 }
 async function saveFolders(list) {
-  return new Promise(function (r) { chrome.storage.sync.set({ folders: list }, r); });
+  return Store.saveList('folders', list);
 }
 
 function loadSettings() {
@@ -103,19 +97,6 @@ var RANDOM_EMOJI = [
 
 function randomEmoji() {
   return RANDOM_EMOJI[Math.floor(Math.random() * RANDOM_EMOJI.length)];
-}
-
-function autoName(url) {
-  try {
-    var u = new URL(url);
-    var path = u.pathname.replace(/^\//, '').replace(/-/g, ' ').replace(/\/$/, '');
-    if (path) {
-      var segments = path.split('/');
-      var last = segments[segments.length - 1].replace(/[a-f0-9]{32}$/i, '').replace(/-+$/, '').trim();
-      if (last) return last.charAt(0).toUpperCase() + last.slice(1);
-    }
-  } catch (e) {}
-  return randomName();
 }
 
 // ── State ──
@@ -200,16 +181,16 @@ async function init() {
     if (e.key === 'Escape') { e.preventDefault(); closeFolderModal(); }
   });
 
+  Store.onListChange('workspaces', function (list) {
+    workspaces = list;
+    applyFilter();
+    updateTotal();
+  });
+  Store.onListChange('folders', function (list) {
+    folders = list;
+    applyFilter();
+  });
   chrome.storage.onChanged.addListener(function (changes) {
-    if (changes.workspaces) {
-      workspaces = changes.workspaces.newValue || [];
-      applyFilter();
-      updateTotal();
-    }
-    if (changes.folders) {
-      folders = changes.folders.newValue || [];
-      applyFilter();
-    }
     if (changes.settings) {
       appSettings = changes.settings.newValue || {};
       applyFilter();
@@ -242,7 +223,7 @@ function render() {
   if (filtered.length === 0 && workspaces.length === 0) {
     content.innerHTML =
       '<div class="empty-state">' +
-        '<div class="empty-icon">📋</div>' +
+        '<div class="empty-icon">🌳</div>' +
         '<div class="empty-title">' + esc(t('emptyNoWorkspaces')) + '</div>' +
         '<div class="empty-desc">' + esc(t('emptyAddHintDash')) + '</div>' +
       '</div>';
@@ -307,7 +288,7 @@ function renderCard(ws, idx) {
   var icon = ws.emoji
     ? '<span class="emoji">' + esc(ws.emoji) + '</span>'
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
-  var badge = (idx >= 0 && idx < 9) ? '<div class="card-badge">' + (idx + 1) + '</div>' : '';
+  var badge = (idx >= 0 && idx < 9) ? '<div class="card-badge' + (idx === 0 ? ' is-first' : '') + '">' + (idx + 1) + '</div>' : '';
 
   var days = remainingDays(ws.expireAt);
   var expireBadge = days !== null
@@ -321,11 +302,15 @@ function renderCard(ws, idx) {
       '<button class="card-action-btn del" data-action="delete" data-id="' + esc(ws.id) + '" title="' + esc(t('deleteBtn')) + '">✕</button>' +
     '</div>' +
     badge +
-    '<div class="card-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
+    '<div class="card-icon" style="background:' + tile[0] + ';color:' + tile[1] + '">' + icon + '</div>' +
     '<div class="card-name">' + esc(ws.name) + '</div>' +
     expireBadge +
-    '<div class="card-url">' + esc(shortUrl(ws.url)) + '</div>' +
+    '<div class="card-url">' + typeChip(ws.url) + esc(Launch.display(ws.url, 40)) + '</div>' +
   '</div>';
+}
+
+function typeChip(url) {
+  return '<span class="type-chip" title="' + esc(Launch.label(url)) + '">' + Launch.icon(url) + ' ' + esc(Launch.label(url)) + '</span>';
 }
 
 function renderFolderSection(folder, items, startIdx) {
@@ -333,7 +318,7 @@ function renderFolderSection(folder, items, startIdx) {
   var html = '<div class="folder-section' + (col ? ' collapsed' : '') + '" data-folder-id="' + esc(folder.id) + '">' +
     '<div class="folder-header" draggable="true" data-folder-drag-id="' + esc(folder.id) + '" data-folder-toggle="' + esc(folder.id) + '">' +
       '<div class="folder-drag-handle" title="' + esc(t('dragToReorder')) + '">⠿</div>' +
-      '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '📁') + '</span>' + esc(folder.name) + '</div>' +
+      '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '🌳') + '</span>' + esc(folder.name) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
       '<span class="fl-chevron">▾</span>' +
       '<div class="folder-actions">' +
@@ -361,7 +346,7 @@ function renderUnfiledSection(items, startIdx) {
   var uCol = collapsedFolders['__unfiled__'];
   var html = '<div class="folder-section' + (uCol ? ' collapsed' : '') + (isHidden ? ' hidden-section' : '') + '" data-folder-id="">' +
     '<div class="folder-header" data-folder-toggle="__unfiled__">' +
-      '<div class="folder-title"><span class="ft-emoji">📋</span>' + esc(t('uncategorized')) + '</div>' +
+      '<div class="folder-title"><span class="ft-emoji">🌱</span>' + esc(t('uncategorized')) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
       '<button class="btn-eye-toggle" data-toggle-uncat="1" title="' + esc(eyeTitle) + '">' + eyeIcon + '</button>' +
       '<span class="fl-chevron">▾</span>' +
@@ -567,7 +552,7 @@ function onCardClick(e) {
     return;
   }
   var url = e.currentTarget.dataset.url;
-  if (url) chrome.tabs.create({ url: url });
+  if (url) Launch.open(url);
 }
 
 async function deleteWs(id) {
@@ -592,7 +577,8 @@ function onSearch() { applyFilter(); }
 function applyFilter() {
   var q = document.getElementById('search').value.toLowerCase().trim();
   filtered = workspaces.filter(function (w) {
-    if (q && !(w.name.toLowerCase().includes(q) || w.url.toLowerCase().includes(q) || (w.emoji && w.emoji.includes(q)))) return false;
+    if (q && !(w.name.toLowerCase().includes(q) || w.url.toLowerCase().includes(q) ||
+      Launch.label(w.url).toLowerCase().includes(q) || (w.emoji && w.emoji.includes(q)))) return false;
     if (activeFilter && activeFilter !== '__expiry__') {
       if (activeFilter === '__unfiled__') return !w.folderId || !folders.some(function (f) { return f.id === w.folderId; });
       return w.folderId === activeFilter;
@@ -619,7 +605,7 @@ function renderFilterBar() {
   var html = '<button class="filter-pill' + (!activeFilter ? ' active' : '') + '" data-filter="">' + esc(t('filterAll')) + '</button>';
   folders.forEach(function (f) {
     html += '<button class="filter-pill' + (activeFilter === f.id ? ' active' : '') + '" data-filter="' + esc(f.id) + '">' +
-      (f.emoji || '📁') + ' ' + esc(f.name) + '</button>';
+      (f.emoji || '🌳') + ' ' + esc(f.name) + '</button>';
   });
   if (hasTemp) {
     html += '<button class="filter-pill' + (activeFilter === '__expiry__' ? ' active' : '') + '" data-filter="__expiry__">⏳ ' + esc(t('expirySort')) + '</button>';
@@ -683,13 +669,13 @@ function onGlobalKey(e) {
     var idx = parseInt(e.key) - 1;
     if (idx < displayOrder.length) {
       e.preventDefault();
-      chrome.tabs.create({ url: displayOrder[idx].url });
+      Launch.open(displayOrder[idx].url);
     }
     return;
   }
 
   if (e.key === 'Enter' && document.activeElement === search && displayOrder.length > 0) {
-    chrome.tabs.create({ url: displayOrder[0].url });
+    Launch.open(displayOrder[0].url);
   }
 
   if (e.key === 'Escape' && document.activeElement === search) {
@@ -724,10 +710,10 @@ function openWsModal(ws) {
   }
 
   var select = document.getElementById('m-folder');
-  var optionsHtml = '<option value="">📋 ' + esc(t('uncategorized')) + '</option>';
+  var optionsHtml = '<option value="">🌱 ' + esc(t('uncategorized')) + '</option>';
   folders.forEach(function (f) {
     var sel = ws && ws.folderId === f.id ? ' selected' : '';
-    optionsHtml += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '📁') + ' ' + esc(f.name) + '</option>';
+    optionsHtml += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '🌳') + ' ' + esc(f.name) + '</option>';
   });
   select.innerHTML = optionsHtml;
 
@@ -757,11 +743,10 @@ async function saveWs() {
   var fUrl = document.getElementById('m-url');
   fUrl.classList.remove('error');
 
+  url = Launch.normalize(url);
   if (!url) { fUrl.classList.add('error'); fUrl.focus(); return; }
 
-  if (!/^https?:\/\//.test(url)) url = 'https://' + url;
-
-  if (!name) name = autoName(url);
+  if (!name) name = Launch.suggestName(url) || randomName();
 
   var expireVal = document.getElementById('m-expire').value;
   var expireAt = null;

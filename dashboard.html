@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="icons/icon16.svg">
-<title>Notion Switcher</title>
+<title>Baobab</title>
 <link rel="stylesheet" href="styles/tokens.css">
 <link rel="stylesheet" href="styles/components.css">
 <script src="theme-init.js"></script>
@@ -19,25 +19,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Falling cubes background ── */
-.falling-cubes {
+/* ── Falling leaves background ── */
+.falling-leaves {
   position: fixed; inset: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
 }
-.falling-cube {
+.falling-leaf {
   position: absolute;
   width: 24px; height: 24px;
-  background: url('icons/notion-cube.svg') center/contain no-repeat;
+  background: url('icons/leaf.svg') center/contain no-repeat;
   opacity: 0.15;
-  animation: cube-fall linear infinite;
+  animation: leaf-fall linear infinite;
 }
-@keyframes cube-fall {
-  0%   { transform: translateY(-40px) rotate(0deg); }
-  100% { transform: translateY(calc(100vh + 40px)) rotate(720deg); }
+@keyframes leaf-fall {
+  0%   { transform: translate(0, -40px) rotate(0deg); }
+  25%  { transform: translate(24px, 25vh) rotate(90deg); }
+  50%  { transform: translate(-16px, 50vh) rotate(200deg); }
+  75%  { transform: translate(20px, 75vh) rotate(290deg); }
+  100% { transform: translate(0, calc(100vh + 40px)) rotate(360deg); }
 }
-[data-theme="dark"] .falling-cube { opacity: 0.10; filter: invert(1); }
+[data-theme="dark"] .falling-leaf { opacity: 0.12; }
 
 .page { max-width: 940px; margin: 0 auto; padding: 56px 32px 80px; position: relative; z-index: 1; }
 
@@ -52,7 +55,7 @@ body {
   width: 36px; height: 36px;
   object-fit: contain;
 }
-.title { font-size: var(--t-title); font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+.title { font-family: var(--font-display); font-size: var(--t-title); font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
 .ws-total {
   font-size: 12px; font-weight: 500;
   color: var(--ink-2);
@@ -97,7 +100,7 @@ body {
   background: var(--accent);
   border: none;
   border-radius: var(--r-lg);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 14px; font-weight: 500;
   cursor: pointer;
   transition: filter 0.12s;
@@ -107,7 +110,7 @@ body {
 .btn-secondary {
   padding: 11px 16px;
   background: var(--paper);
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-control);
   border-radius: var(--r-lg);
   color: var(--ink-2);
   font-size: 14px; font-weight: 500;
@@ -115,7 +118,7 @@ body {
   transition: background 0.12s, border-color 0.12s, color 0.12s;
   white-space: nowrap;
 }
-.btn-secondary:hover { background: var(--hover); border-color: var(--line-2); color: var(--ink); }
+.btn-secondary:hover { background: var(--hover-2); border-color: var(--line-control); color: var(--ink); }
 .btn-secondary .ico { width: 16px; height: 16px; display: block; }
 
 /* ── Grid ── */
@@ -148,10 +151,10 @@ body {
 .card-badge {
   position: absolute; top: 13px; right: 14px;
   min-width: 22px; height: 22px; padding: 0 6px;
-  background: var(--field);
+  background: var(--star-soft);
   border-radius: var(--r-sm);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: var(--ink-4); font-weight: 600;
+  font-size: 11px; color: var(--ink-2); font-weight: 600;
   font-family: var(--mono);
 }
 .card:hover .card-badge { display: none; }
@@ -242,8 +245,8 @@ body {
 .filter-bar:empty { display: none; }
 .filter-pill {
   flex: none; padding: 5px 14px; border-radius: 14px;
-  border: 1px solid var(--line-2); background: var(--paper);
-  color: var(--ink-3); font-size: 12px; font-weight: 500;
+  border: 1px solid var(--line-control); background: var(--paper);
+  color: var(--ink-2); font-size: 12px; font-weight: 500;
   cursor: pointer; white-space: nowrap; transition: all 0.12s;
   font-family: var(--font);
 }
@@ -314,9 +317,10 @@ body {
 }
 .expire-badge {
   display: inline-block;
+  align-self: flex-start;
   font-size: 10px; font-weight: 600;
-  color: var(--warning, #e67e22);
-  background: var(--warning-soft, rgba(230,126,34,0.12));
+  color: var(--autumn);
+  background: var(--autumn-soft);
   padding: 2px 7px; border-radius: 10px;
   margin-top: 4px;
 }
@@ -325,7 +329,7 @@ body {
   padding: 8px 6px; margin-bottom: 12px;
 }
 .hide-uncat-btn {
-  background: transparent; border: 1px solid var(--line-2);
+  background: transparent; border: 1px solid var(--line-control);
   border-radius: var(--r-md); padding: 6px 14px;
   font-size: 12px; color: var(--ink-3); cursor: pointer;
   font-family: var(--font);
@@ -338,7 +342,7 @@ body {
 /* ── Empty State ── */
 .empty-state { padding: 72px 20px; text-align: center; }
 .empty-icon { font-size: 44px; margin-bottom: 16px; opacity: 0.5; }
-.empty-title { font-size: 17px; color: var(--ink-2); margin-bottom: 8px; font-weight: 600; }
+.empty-title { font-family: var(--font-display); font-size: 17px; line-height: 26px; color: var(--ink-2); margin-bottom: 8px; font-weight: 400; }
 .empty-desc { font-size: 13px; color: var(--ink-3); line-height: 1.6; }
 
 /* ── Footer ── */
@@ -362,7 +366,7 @@ body {
 /* ── Modal ── */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(15,15,15,0.32);
+  background: var(--scrim);
   backdrop-filter: blur(1px);
   z-index: 100; align-items: center; justify-content: center;
 }
@@ -379,7 +383,7 @@ body {
 .modal-input {
   flex: 1;
   background: var(--paper);
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-control);
   border-radius: var(--r-md);
   padding: 10px 14px;
   color: var(--ink);
@@ -394,7 +398,7 @@ body {
 .modal-select {
   flex: 1;
   background: var(--paper);
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-control);
   border-radius: var(--r-md);
   padding: 10px 14px;
   color: var(--ink);
@@ -412,17 +416,17 @@ body {
 }
 .modal-btn-cancel { background: transparent; color: var(--ink-2); }
 .modal-btn-cancel:hover { background: var(--hover); color: var(--ink); }
-.modal-btn-save { background: var(--accent); color: #fff; }
+.modal-btn-save { background: var(--accent); color: var(--on-accent); }
 .modal-btn-save:hover { filter: brightness(1.06); }
 </style>
 </head>
 <body>
 
-<div class="falling-cubes" id="falling-cubes"></div>
+<div class="falling-leaves" id="falling-leaves"></div>
 <div class="page">
   <div class="header">
-    <img class="logo" src="icons/icon48.png" alt="Notion Switcher">
-    <h1 class="title">Notion Switcher</h1>
+    <img class="logo" src="icons/icon48.png" alt="Baobab">
+    <h1 class="title">Baobab</h1>
     <span class="ws-total" id="ws-total"></span>
   </div>
 
@@ -448,7 +452,7 @@ body {
   <div class="modal">
     <div class="modal-title" id="modal-title" data-i18n="addWorkspace"></div>
     <div class="modal-row">
-      <input class="modal-input" id="m-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+      <input class="modal-input" id="m-url" type="text" data-i18n-placeholder="urlPlaceholder" spellcheck="false">
     </div>
     <div class="modal-row">
       <input class="modal-input" id="m-name" type="text" data-i18n-placeholder="workspaceName">
@@ -495,7 +499,9 @@ body {
 </div>
 
 <script src="i18n.js"></script>
+<script src="store.js"></script>
 <script src="ui.js"></script>
+<script src="launch.js"></script>
 <script src="settings.js"></script>
 <script src="dashboard.js"></script>
 </body>

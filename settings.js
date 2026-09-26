@@ -94,6 +94,25 @@ window.Settings = (function () {
 
   var overlay = null, recording = null, appSettings = {};
 
+  // Where the lists live: synced across devices, or kept on this device after overflowing sync.
+  function renderStorageStatus() {
+    var el = overlay && overlay.querySelector('#storage-status');
+    if (!el || !window.Store) return;
+    Promise.all([Store.loadList('workspaces'), Store.loadList('folders'), Store.syncUsage()]).then(function (r) {
+      var usage = r[2];
+      var local = Store.mode('workspaces') === 'local' || Store.mode('folders') === 'local';
+      var kb = function (b) { return (b / 1024).toFixed(b < 10240 ? 1 : 0) + 'KB'; };
+      if (local) {
+        el.classList.add('is-local');
+        el.textContent = t('storageLocal');
+      } else {
+        el.classList.remove('is-local');
+        el.textContent = usage.bytes == null ? t('storageSyncOnly')
+          : t('storageSync', [kb(usage.bytes), kb(usage.quota)]);
+      }
+    });
+  }
+
   function close() {
     if (overlay) overlay.classList.remove('open');
     stopRecording();
@@ -161,6 +180,7 @@ window.Settings = (function () {
         '<div class="sc-note">' + t('chromeShortcutsNote') + '</div>' +
       '</div>' +
       '<div class="set-section" id="clear-section">' +
+        '<div class="sc-note sc-storage" id="storage-status"></div>' +
         '<button class="sc-danger-btn" data-clear-all="1">' + t('clearAll') + '</button>' +
       '</div>' +
       '<div class="set-section">' +
@@ -229,6 +249,7 @@ window.Settings = (function () {
         saveAppSettings(appSettings);
       };
     }
+    renderStorageStatus();
     var clearBtn = overlay.querySelector('[data-clear-all]');
     if (clearBtn) {
       clearBtn.onclick = function () {
@@ -244,7 +265,7 @@ window.Settings = (function () {
           '</div>';
         sec.querySelector('[data-clear-cancel]').onclick = function () { render(); bind(); };
         sec.querySelector('[data-clear-yes]').onclick = function () {
-          chrome.storage.sync.set({ workspaces: [], folders: [] }, function () { location.reload(); });
+          Store.clearLists(['workspaces', 'folders']).then(function () { location.reload(); });
         };
       };
     }

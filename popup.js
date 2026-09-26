@@ -15,36 +15,28 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function shortUrl(url) {
-  try {
-    var u = new URL(url);
-    var path = u.pathname.replace(/\/$/, '');
-    return (u.hostname.replace(/^www\./, '')) + path.slice(0, 26) + (path.length > 26 ? '…' : '');
-  } catch (e) { return url.slice(0, 34); }
-}
-
 async function loadWorkspaces() {
-  return new Promise(function (r) { chrome.storage.sync.get(['workspaces'], function (d) { r(d.workspaces || []); }); });
+  return Store.loadList('workspaces');
 }
 
 async function saveWorkspaces(list) {
-  return new Promise(function (r) { chrome.storage.sync.set({ workspaces: list }, r); });
+  return Store.saveList('workspaces', list);
 }
 
 async function loadFolders() {
-  return new Promise(function (r) { chrome.storage.sync.get(['folders'], function (d) { r(d.folders || []); }); });
+  return Store.loadList('folders');
 }
 
 async function saveFolders(list) {
-  return new Promise(function (r) { chrome.storage.sync.set({ folders: list }, r); });
+  return Store.saveList('folders', list);
 }
 
 function populateFolderSelect(selectedFolderId) {
   var select = document.getElementById('f-folder');
-  var html = '<option value="">📋 ' + esc(t('uncategorized')) + '</option>';
+  var html = '<option value="">🌱 ' + esc(t('uncategorized')) + '</option>';
   folders.forEach(function (f) {
     var sel = selectedFolderId === f.id ? ' selected' : '';
-    html += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '📁') + ' ' + esc(f.name) + '</option>';
+    html += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '🌳') + ' ' + esc(f.name) + '</option>';
   });
   html += '<option value="__new__">' + esc(t('newFolderOption')) + '</option>';
   select.innerHTML = html;
@@ -64,8 +56,8 @@ async function createNewFolder() {
 }
 
 function smartOpen(url) {
-  chrome.tabs.create({ url: url });
-  window.close();
+  // close only after the launch call is dispatched, or the popup would cancel it
+  Launch.open(url).then(function () { window.close(); });
 }
 
 function loadSettings() {
@@ -115,19 +107,6 @@ var RANDOM_EMOJI = [
 
 function randomEmoji() {
   return RANDOM_EMOJI[Math.floor(Math.random() * RANDOM_EMOJI.length)];
-}
-
-function autoName(url) {
-  try {
-    var u = new URL(url);
-    var path = u.pathname.replace(/^\//, '').replace(/-/g, ' ').replace(/\/$/, '');
-    if (path) {
-      var segments = path.split('/');
-      var last = segments[segments.length - 1].replace(/[a-f0-9]{32}$/i, '').replace(/-+$/, '').trim();
-      if (last) return last.charAt(0).toUpperCase() + last.slice(1);
-    }
-  } catch (e) {}
-  return randomName();
 }
 
 var workspaces = [];
@@ -218,8 +197,8 @@ function renderItem(ws, idx) {
   var icon = ws.emoji
     ? '<span>' + esc(ws.emoji) + '</span>'
     : '<span class="initial" style="color:' + tile[1] + '">' + esc(getInitial(ws.name)) + '</span>';
-  var isActive = currentTabUrl && ws.url && currentTabUrl.startsWith(ws.url.split('?')[0]);
-  var badge = (idx >= 0 && idx < 9) ? '<div class="ws-badge">' + (idx + 1) + '</div>' : '';
+  var isActive = currentTabUrl && /^https?:/.test(ws.url) && currentTabUrl.startsWith(ws.url.split('?')[0]);
+  var badge = (idx >= 0 && idx < 9) ? '<div class="ws-badge' + (idx === 0 ? ' is-first' : '') + '">' + (idx + 1) + '</div>' : '';
   var days = remainingDays(ws.expireAt);
   var expireBadge = days !== null
     ? '<span class="expire-badge">' + (days === 0 ? esc(t('expiresToday')) : esc(t('expiresIn', [String(days)]))) + '</span>'
@@ -232,10 +211,10 @@ function renderItem(ws, idx) {
       '<button class="g-btn g-add" data-action="add" data-folder="' + esc(ws.folderId || '') + '" title="' + esc(t('addBelow')) + '" tabindex="-1">＋</button>' +
       '<span class="g-btn g-handle" draggable="true" title="' + esc(t('dragToSort')) + '" tabindex="-1">⠿</span>' +
     '</div>' +
-    '<div class="ws-icon" style="background:' + tile[0] + '">' + icon + '</div>' +
+    '<div class="ws-icon" style="background:' + tile[0] + ';color:' + tile[1] + '">' + icon + '</div>' +
     '<div class="ws-info">' +
       '<div class="ws-name">' + esc(ws.name) + expireBadge + '</div>' +
-      '<div class="ws-url">' + esc(shortUrl(ws.url)) + '</div>' +
+      '<div class="ws-url">' + typeChip(ws.url) + esc(Launch.display(ws.url, 30)) + '</div>' +
     '</div>' +
     '<div class="ws-meta">' +
       '<div class="ws-actions">' +
@@ -245,6 +224,10 @@ function renderItem(ws, idx) {
       badge +
     '</div>' +
   '</div>';
+}
+
+function typeChip(url) {
+  return '<span class="type-chip" title="' + esc(Launch.label(url)) + '">' + Launch.icon(url) + ' ' + esc(Launch.label(url)) + '</span>';
 }
 
 function renderList() {
@@ -293,7 +276,7 @@ function renderList() {
         if (items.length === 0) return;
         var col = collapsedFolders[folder.id];
         html += '<div class="folder-section' + (col ? ' collapsed' : '') + '">';
-        html += '<div class="folder-label" data-folder-toggle="' + esc(folder.id) + '"><span class="fl-emoji">' + (folder.emoji || '📁') + '</span>' + esc(folder.name) + '<span class="fl-count">' + items.length + '</span><span class="fl-chevron">▾</span></div>';
+        html += '<div class="folder-label" data-folder-toggle="' + esc(folder.id) + '"><span class="fl-emoji">' + (folder.emoji || '🌳') + '</span>' + esc(folder.name) + '<span class="fl-count">' + items.length + '</span><span class="fl-chevron">▾</span></div>';
         html += '<div class="folder-items">';
         items.forEach(function (ws) {
           if (col) {
@@ -310,7 +293,7 @@ function renderList() {
       if (unfiled.length > 0 && !appSettings.hideUncategorized) {
         var uCol = collapsedFolders['__unfiled__'];
         html += '<div class="folder-section' + (uCol ? ' collapsed' : '') + '">';
-        html += '<div class="folder-label" data-folder-toggle="__unfiled__"><span class="fl-emoji">📋</span>' + esc(t('uncategorized')) + '<span class="fl-count">' + unfiled.length + '</span><span class="fl-chevron">▾</span></div>';
+        html += '<div class="folder-label" data-folder-toggle="__unfiled__"><span class="fl-emoji">🌱</span>' + esc(t('uncategorized')) + '<span class="fl-count">' + unfiled.length + '</span><span class="fl-chevron">▾</span></div>';
         html += '<div class="folder-items">';
         unfiled.forEach(function (ws) {
           if (uCol) {
@@ -518,7 +501,7 @@ function renderFilterBar() {
   var html = '<button class="filter-pill' + (!activeFilter ? ' active' : '') + '" data-filter="">' + esc(t('filterAll')) + '</button>';
   folders.forEach(function (f) {
     html += '<button class="filter-pill' + (activeFilter === f.id ? ' active' : '') + '" data-filter="' + esc(f.id) + '">' +
-      (f.emoji || '📁') + ' ' + esc(f.name) + '</button>';
+      (f.emoji || '🌳') + ' ' + esc(f.name) + '</button>';
   });
   if (hasTemp) {
     html += '<button class="filter-pill' + (activeFilter === '__expiry__' ? ' active' : '') + '" data-filter="__expiry__">⏳ ' + esc(t('expirySort')) + '</button>';
@@ -583,8 +566,9 @@ function openAddForm(folderId) {
   document.getElementById('add-link-wrap').style.display = 'none';
 
   var urlInput = document.getElementById('f-url');
-  if (currentTabUrl.includes('notion.so') || currentTabUrl.includes('notion.com')) {
-    if (!urlInput.value) urlInput.value = currentTabUrl.split('?')[0];
+  if (/^https?:\/\//.test(currentTabUrl) && !urlInput.value) {
+    // Notion page ids live in the path; query strings there are view state only
+    urlInput.value = Launch.detect(currentTabUrl) === 'notion' ? currentTabUrl.split('?')[0] : currentTabUrl;
   }
   urlInput.focus();
 }
@@ -618,11 +602,10 @@ async function saveForm() {
   var fUrl  = document.getElementById('f-url');
   fUrl.classList.remove('error');
 
+  url = Launch.normalize(url);
   if (!url)  { fUrl.classList.add('error'); fUrl.focus(); return; }
 
-  if (!/^https?:\/\//.test(url)) url = 'https://' + url;
-
-  if (!name) name = autoName(url);
+  if (!name) name = Launch.suggestName(url) || randomName();
 
   var folderId = document.getElementById('f-folder').value || null;
   if (folderId === '__new__') folderId = null;

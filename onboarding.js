@@ -34,8 +34,8 @@ window.Onboarding = (function () {
         '<span style="font-size:15px">\uD83D\uDCDD</span>' +
       '</div>' +
       '<div class="ws-info">' +
-        '<div class="ws-name">My Workspace</div>' +
-        '<div class="ws-url">notion.so/my-workspace</div>' +
+        '<div class="ws-name">Project Plan</div>' +
+        '<div class="ws-url"><span class="type-chip">\uD83D\uDCC4 Google</span>docs.google.com/document/…</div>' +
       '</div>' +
       '<div class="ws-meta"><span class="ws-badge ob-badge-highlight">1</span></div>';
 

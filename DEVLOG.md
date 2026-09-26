@@ -4,6 +4,60 @@ Notion Switcher 개발 기록.
 
 ---
 
+## 2026-09-26 — v4.0 시작: 프로젝트 중심 문서 런처로 확장
+
+Notion 전환기 → 웹 문서·앱·로컬 파일을 프로젝트 단위로 여는 런처로 방향 전환. 배경과 로드맵은 PRD §11.
+
+### 변경사항
+
+**1. `launch.js` 신규 — 항목 타입/실행 공용 모듈**
+- `Launch.normalize`: URL·파일 경로(Windows/UNC/POSIX)·앱 딥링크 입력을 실행 가능한 URL로 정규화, 위험 스킴 차단
+- `Launch.detect` / `label` / `icon`: URL로 타입 추론 (웹·Notion·Google·Office·디자인·코드·태스크·앱·파일). 저장 데이터 변경 없음 → v3 데이터 호환
+- `Launch.open`: 웹/파일은 새 탭, 앱 딥링크는 활성 탭에서 호출(빈 탭 방지), 파일 접근 권한 없으면 확장 상세 페이지 안내
+- `Launch.display` / `suggestName`: 경로는 파일명이 보이도록 뒤쪽 기준 축약, 이름 비우면 파일명/앱 이름 제안
+
+**2. 팝업·대시보드 연동**
+- 목록/카드에 타입 칩 표시, 모든 열기 동작을 `Launch.open`으로 통일
+- 팝업 "링크 추가"가 현재 탭이 어떤 웹 페이지든 자동 입력
+- 대시보드 검색이 타입/앱 이름도 매칭
+
+**3. 용어 전환 (ko/en)**
+- 워크스페이스 → 항목, 폴더 → 프로젝트. 확장 설명·단축키 설명 갱신. `extName`은 이름 확정 전까지 유지
+
+**4. 프리뷰**
+- `chrome-mock.js`: 새 타입 샘플 추가, http로 열면 실제 ko 문자열 로드
+
+**5. 브랜드: Baobab 🌳**
+- 제품명 Notion Switcher → **Baobab** (스토어명 "Baobab – Project Launcher", `short_name` Baobab)
+- 용어: 항목 → 잎, 프로젝트 → 나무, 미분류 → 씨앗 (ko/en). 기본 이모지 📁→🌳, 📋→🌱
+- 아이콘 교체: `icons/baobab.svg` 원본 → `icon16/48/128.png` 렌더링 (16px는 나무만 크롭), `notion-cube.*` 삭제
+- 대시보드 배경: 떨어지는 큐브 → 흔들리며 떨어지는 잎 (`icons/leaf.svg`)
+
+**6. 디자인 시스템 적용 (Dawn / Night)**
+- `styles/tokens.css`를 Baobab 디자인 시스템 값으로 교체: 라이트 Dawn, 다크 Night(밤하늘), `line-control`·`on-accent`·`star`·`autumn`·`scrim` 등 신규 토큰
+- 하드코딩 색 제거: 버튼 `#fff` → `on-accent`, 만료 배지 주황 폴백 → `autumn`, danger 폴백, 온보딩 파란 그림자, 오버레이 → `scrim`
+- 입력·필 버튼 테두리를 `line-control`(3:1)로, components.css의 옛 다크 오버라이드 블록 삭제 (토큰이 담당)
+- 단축키 배지 → "별": `star-soft` 배경, 첫 번째(Enter 대상)는 채워진 `star`
+- 디스플레이 서체 Gowun Batang 서브셋 번들(`fonts/`, OFL): 대시보드 제목·빈 화면 제목
+- 버그 수정: 다크에서 텍스트로 렌더링되는 이모지가 흐려지던 문제(타일 전경색 지정), 카드 안 만료 배지가 가로로 늘어나던 문제
+
+**7. 저장 한도 해결 (`store.js` 신규)**
+- 원인: `chrome.storage.sync`는 키당 8KB인데 모든 잎을 `workspaces` 키 하나에 저장 → 약 40~60개(긴 한글 파일 경로는 더 적게)에서 저장 실패
+- 목록을 7.9KB 이하 청크(`workspaces.0`, `workspaces.1`, …, 개수는 `workspaces.n`)로 나눠 sync 전체 100KB까지 사용. null 필드는 저장 시 생략
+- 100KB를 넘으면 `storage.local`에 저장(데이터 손실 없음), 설정 패널에 "이 기기에만 저장 중" 표시. 이후 저장마다 sync를 먼저 시도해 한도 안으로 줄면 자동 복귀
+- v3 단일 키 값은 청크가 없을 때 그대로 읽고, 다음 저장 때 정리
+- 설정 패널에 저장 공간 사용량 표시, "숲 전체 비우기"는 두 저장소의 청크를 모두 삭제
+- 쿼터를 흉내 낸 목(mock)으로 테스트: 레거시 읽기, 300개(긴 경로) sync 저장, 축소 시 청크 정리, 100KB 초과 폴백·복귀, 비우기 — 일반 Notion 링크 약 600개가 sync에 들어감
+
+### 변경 파일
+
+- `launch.js` (신규), `popup.js`, `dashboard.js`, `popup.html`, `dashboard.html`
+- `styles/components.css` — `.type-chip`
+- `_locales/ko/messages.json`, `_locales/en/messages.json`
+- `preview/*` , `PRD.md` (§11), `DEVLOG.md`
+
+---
+
 ## 2026-07-08 — v3.2 마무리: 버그 수정, 필터 드래그, 이름 변경
 
 ### 변경사항

@@ -75,7 +75,7 @@ body::-webkit-scrollbar-thumb {
   align-items: center;
   gap: 8px;
   background: var(--field);
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-control);
   border-radius: var(--r-md);
   padding: 9px 14px;
   color: var(--ink-4);
@@ -116,16 +116,16 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   flex: none;
   width: 24px; height: 24px;
   border-radius: 12px;
-  border: 1px dashed var(--line-2);
+  border: 1px dashed var(--line-control);
   background: transparent;
-  color: var(--ink-4);
+  color: var(--ink-3);
   font-size: 14px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.12s;
   font-family: var(--font);
 }
-.filter-add-btn:hover { background: var(--hover); border-color: var(--ink-4); color: var(--ink-2); }
+.filter-add-btn:hover { background: var(--hover); border-color: var(--ink-3); color: var(--ink-2); }
 .folder-add-inline {
   display: none;
   gap: 4px;
@@ -135,8 +135,8 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 .folder-add-inline.open { display: flex; }
 .filter-pill {
   flex: none; padding: 3px 10px; border-radius: 12px;
-  border: 1px solid var(--line-2); background: var(--paper);
-  color: var(--ink-3); font-size: 11px; font-weight: 500;
+  border: 1px solid var(--line-control); background: var(--paper);
+  color: var(--ink-2); font-size: 11px; font-weight: 500;
   cursor: pointer; white-space: nowrap; transition: all 0.12s;
   font-family: var(--font);
 }
@@ -248,8 +248,8 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   min-width: 22px; height: 22px;
   padding: 0 5px;
   border-radius: var(--r-sm);
-  background: var(--field);
-  color: var(--ink-4);
+  background: var(--star-soft);
+  color: var(--ink-2);
   font-size: 11px; font-weight: 600;
   font-family: var(--mono);
   display: flex; align-items: center; justify-content: center;
@@ -329,7 +329,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 .form-input {
   flex: 1;
   background: var(--paper);
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-control);
   border-radius: var(--r-sm);
   padding: 7px 10px;
   color: var(--ink);
@@ -346,7 +346,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 .form-select {
   flex: 1;
   background: var(--paper);
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--line-control);
   border-radius: var(--r-sm);
   padding: 7px 10px;
   color: var(--ink);
@@ -363,7 +363,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   background: var(--accent);
   border: none;
   border-radius: var(--r-sm);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 13px; font-weight: 500;
   cursor: pointer;
   transition: filter 0.1s;
@@ -384,8 +384,8 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 }
 .expire-badge {
   font-size: 10px; font-weight: 600;
-  color: var(--warning, #e67e22);
-  background: var(--warning-soft, rgba(230,126,34,0.12));
+  color: var(--autumn);
+  background: var(--autumn-soft);
   padding: 1px 6px; border-radius: 10px;
   margin-left: 4px; white-space: nowrap;
 }
@@ -396,7 +396,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
   font-size: 11px; color: var(--ink-3);
 }
 .hide-uncat-btn {
-  background: transparent; border: 1px solid var(--line-2);
+  background: transparent; border: 1px solid var(--line-control);
   border-radius: var(--r-sm); padding: 3px 8px;
   font-size: 11px; color: var(--ink-3); cursor: pointer;
   font-family: var(--font);
@@ -421,7 +421,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 
 <div class="header">
   <div class="header-left">
-    <span class="header-title">Notion Switcher</span>
+    <span class="header-title">Baobab</span>
     <span class="header-count" id="ws-count"></span>
   </div>
   <div class="header-right" style="display:flex;align-items:center;gap:2px">
@@ -439,7 +439,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 
 <div class="add-form" id="add-form">
   <div class="form-url-row">
-    <input class="form-input" id="f-url" type="text" placeholder="https://www.notion.so/..." spellcheck="false">
+    <input class="form-input" id="f-url" type="text" data-i18n-placeholder="urlPlaceholder" spellcheck="false">
     <button class="btn-save" id="btn-save" data-i18n="save"></button>
   </div>
   <div class="form-bottom-row">
@@ -482,7 +482,9 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 <div class="kbd-hint" data-i18n="kbdHint"></div>
 
 <script src="i18n.js"></script>
+<script src="store.js"></script>
 <script src="ui.js"></script>
+<script src="launch.js"></script>
 <script src="settings.js"></script>
 <script src="onboarding.js"></script>
 <script src="popup.js"></script>
