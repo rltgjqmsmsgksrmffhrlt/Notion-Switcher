@@ -27,6 +27,12 @@ Notion 전환기 → 웹 문서·앱·로컬 파일을 프로젝트 단위로 �
 **4. 프리뷰**
 - `chrome-mock.js`: 새 타입 샘플 추가, http로 열면 실제 ko 문자열 로드
 
+**5. 브랜드: Baobab 🌳**
+- 제품명 Notion Switcher → **Baobab** (스토어명 "Baobab – Project Launcher", `short_name` Baobab)
+- 용어: 항목 → 잎, 프로젝트 → 나무, 미분류 → 씨앗 (ko/en). 기본 이모지 📁→🌳, 📋→🌱
+- 아이콘 교체: `icons/baobab.svg` 원본 → `icon16/48/128.png` 렌더링 (16px는 나무만 크롭), `notion-cube.*` 삭제
+- 대시보드 배경: 떨어지는 큐브 → 흔들리며 떨어지는 잎 (`icons/leaf.svg`)
+
 ### 변경 파일
 
 - `launch.js` (신규), `popup.js`, `dashboard.js`, `popup.html`, `dashboard.html`

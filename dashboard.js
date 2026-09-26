@@ -1,12 +1,12 @@
 'use strict';
 
-(function fallingCubes() {
-  var container = document.getElementById('falling-cubes');
+(function fallingLeaves() {
+  var container = document.getElementById('falling-leaves');
   if (!container) return;
   var COUNT = 14;
   for (var i = 0; i < COUNT; i++) {
     var cube = document.createElement('div');
-    cube.className = 'falling-cube';
+    cube.className = 'falling-leaf';
     var isGiant = Math.random() < 0.15;
     var size = isGiant ? 80 + Math.random() * 120 : 16 + Math.random() * 20;
     var left = Math.random() * 100;
@@ -223,7 +223,7 @@ function render() {
   if (filtered.length === 0 && workspaces.length === 0) {
     content.innerHTML =
       '<div class="empty-state">' +
-        '<div class="empty-icon">📋</div>' +
+        '<div class="empty-icon">🌳</div>' +
         '<div class="empty-title">' + esc(t('emptyNoWorkspaces')) + '</div>' +
         '<div class="empty-desc">' + esc(t('emptyAddHintDash')) + '</div>' +
       '</div>';
@@ -318,7 +318,7 @@ function renderFolderSection(folder, items, startIdx) {
   var html = '<div class="folder-section' + (col ? ' collapsed' : '') + '" data-folder-id="' + esc(folder.id) + '">' +
     '<div class="folder-header" draggable="true" data-folder-drag-id="' + esc(folder.id) + '" data-folder-toggle="' + esc(folder.id) + '">' +
       '<div class="folder-drag-handle" title="' + esc(t('dragToReorder')) + '">⠿</div>' +
-      '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '📁') + '</span>' + esc(folder.name) + '</div>' +
+      '<div class="folder-title"><span class="ft-emoji">' + (folder.emoji ? esc(folder.emoji) : '🌳') + '</span>' + esc(folder.name) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
       '<span class="fl-chevron">▾</span>' +
       '<div class="folder-actions">' +
@@ -346,7 +346,7 @@ function renderUnfiledSection(items, startIdx) {
   var uCol = collapsedFolders['__unfiled__'];
   var html = '<div class="folder-section' + (uCol ? ' collapsed' : '') + (isHidden ? ' hidden-section' : '') + '" data-folder-id="">' +
     '<div class="folder-header" data-folder-toggle="__unfiled__">' +
-      '<div class="folder-title"><span class="ft-emoji">📋</span>' + esc(t('uncategorized')) + '</div>' +
+      '<div class="folder-title"><span class="ft-emoji">🌱</span>' + esc(t('uncategorized')) + '</div>' +
       '<span class="folder-count">' + items.length + '</span>' +
       '<button class="btn-eye-toggle" data-toggle-uncat="1" title="' + esc(eyeTitle) + '">' + eyeIcon + '</button>' +
       '<span class="fl-chevron">▾</span>' +
@@ -605,7 +605,7 @@ function renderFilterBar() {
   var html = '<button class="filter-pill' + (!activeFilter ? ' active' : '') + '" data-filter="">' + esc(t('filterAll')) + '</button>';
   folders.forEach(function (f) {
     html += '<button class="filter-pill' + (activeFilter === f.id ? ' active' : '') + '" data-filter="' + esc(f.id) + '">' +
-      (f.emoji || '📁') + ' ' + esc(f.name) + '</button>';
+      (f.emoji || '🌳') + ' ' + esc(f.name) + '</button>';
   });
   if (hasTemp) {
     html += '<button class="filter-pill' + (activeFilter === '__expiry__' ? ' active' : '') + '" data-filter="__expiry__">⏳ ' + esc(t('expirySort')) + '</button>';
@@ -710,10 +710,10 @@ function openWsModal(ws) {
   }
 
   var select = document.getElementById('m-folder');
-  var optionsHtml = '<option value="">📋 ' + esc(t('uncategorized')) + '</option>';
+  var optionsHtml = '<option value="">🌱 ' + esc(t('uncategorized')) + '</option>';
   folders.forEach(function (f) {
     var sel = ws && ws.folderId === f.id ? ' selected' : '';
-    optionsHtml += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '📁') + ' ' + esc(f.name) + '</option>';
+    optionsHtml += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '🌳') + ' ' + esc(f.name) + '</option>';
   });
   select.innerHTML = optionsHtml;
 

@@ -1,15 +1,15 @@
 {
   "extName": {
-    "message": "Notion Switcher"
+    "message": "Baobab – 프로젝트 런처"
   },
   "extDescription": {
-    "message": "프로젝트별로 문서·웹·앱·파일을 한 번에 여는 런처"
+    "message": "프로젝트마다 나무 한 그루. 문서·웹·앱·파일을 잎으로 달고 단축키 한 번에 여세요"
   },
   "commandPopup": {
-    "message": "런처 팝업 열기"
+    "message": "Baobab 팝업 열기"
   },
   "commandDashboard": {
-    "message": "프로젝트 대시보드 열기"
+    "message": "Baobab 숲(대시보드) 열기"
   },
   "dashboard": {
     "message": "대시보드 ↗"
@@ -21,7 +21,7 @@
     "message": "검색 또는 숫자(1~9)로 바로 이동"
   },
   "addLink": {
-    "message": "링크 추가"
+    "message": "잎 추가"
   },
   "moreOptions": {
     "message": "▸ 상세 설정"
@@ -30,13 +30,13 @@
     "message": "▾ 접기"
   },
   "searchPlaceholderDash": {
-    "message": "항목·프로젝트 검색... (숫자 1~9로 바로 이동)"
+    "message": "잎·나무 검색... (숫자 1~9로 바로 이동)"
   },
   "workspaceName": {
     "message": "이름 (비우면 랜덤 생성)"
   },
   "uncategorized": {
-    "message": "미분류"
+    "message": "씨앗"
   },
   "filterAll": {
     "message": "전체"
@@ -45,16 +45,16 @@
     "message": "만료순"
   },
   "clearAll": {
-    "message": "전체 리스트 삭제"
+    "message": "숲 전체 비우기"
   },
   "clearAllConfirm": {
-    "message": "모든 항목과 프로젝트가\n영구 삭제됩니다."
+    "message": "모든 나무와 잎이\n영구 삭제됩니다."
   },
   "clearAllYes": {
     "message": "삭제"
   },
   "newFolderName": {
-    "message": "새 프로젝트 이름"
+    "message": "새 나무 이름"
   },
   "add": {
     "message": "추가"
@@ -69,40 +69,40 @@
     "message": "수정"
   },
   "addWorkspace": {
-    "message": "항목 추가"
+    "message": "잎 추가"
   },
   "editWorkspace": {
-    "message": "항목 편집"
+    "message": "잎 편집"
   },
   "kbdHint": {
     "message": "숫자 1~9 바로 이동"
   },
   "countSuffix": {
-    "message": "$COUNT$개",
+    "message": "$COUNT$장",
     "placeholders": {
       "count": { "content": "$1" }
     }
   },
   "countWorkspaces": {
-    "message": "$COUNT$개 항목",
+    "message": "잎 $COUNT$장",
     "placeholders": {
       "count": { "content": "$1" }
     }
   },
   "newFolderOption": {
-    "message": "＋ 새 프로젝트..."
+    "message": "＋ 새 나무 심기..."
   },
   "emptyNoWorkspaces": {
-    "message": "등록된 항목이 없습니다"
+    "message": "아직 숲이 비어 있어요"
   },
   "emptyNoResults": {
     "message": "검색 결과 없음"
   },
   "emptyAddHint": {
-    "message": "아래 + 버튼으로 추가해보세요"
+    "message": "아래 + 버튼으로 첫 잎을 달아보세요"
   },
   "emptyAddHintDash": {
-    "message": "상단 + 추가 버튼으로 웹 문서, 앱 링크, 로컬 파일을 등록해보세요."
+    "message": "상단 + 추가 버튼으로 웹 문서, 앱 링크, 로컬 파일을 잎으로 달아보세요."
   },
   "emptySearchHint": {
     "message": "다른 키워드로 검색해보세요"
@@ -129,22 +129,22 @@
     "message": "삭제"
   },
   "folderAdd": {
-    "message": "프로젝트 추가"
+    "message": "나무 심기"
   },
   "folderEdit": {
-    "message": "프로젝트 편집"
+    "message": "나무 편집"
   },
   "folderName": {
-    "message": "프로젝트 이름"
+    "message": "나무(프로젝트) 이름"
   },
   "folderBtn": {
-    "message": "📁 프로젝트"
+    "message": "🌳 나무"
   },
   "addBtn": {
     "message": "＋ 추가"
   },
   "dragToFolder": {
-    "message": "항목을 이 프로젝트로 드래그하세요"
+    "message": "잎을 이 나무로 드래그하세요"
   },
   "auto": {
     "message": "자동"
@@ -306,13 +306,13 @@
     "message": "임시"
   },
   "hideUncategorized": {
-    "message": "미분류 숨기기"
+    "message": "씨앗 숨기기"
   },
   "hideUncategorizedDisabled": {
-    "message": "미분류에 링크가 있어 숨길 수 없습니다"
+    "message": "씨앗에 잎이 있어 숨길 수 없습니다"
   },
   "showUncategorized": {
-    "message": "미분류 보기"
+    "message": "씨앗 보기"
   },
   "obWelcomeTitle": {
     "message": "처음이시죠? 같이 해봐요"
@@ -324,10 +324,10 @@
     "message": "시작할게요"
   },
   "obTip1": {
-    "message": "문서·앱·파일 링크를 추가해요"
+    "message": "문서·앱·파일을 잎으로 달아요"
   },
   "obTip2": {
-    "message": "프로젝트를 만들어 묶어요"
+    "message": "프로젝트마다 나무를 심어요"
   },
   "obTip3": {
     "message": "숫자키 1~9로 바로 이동"

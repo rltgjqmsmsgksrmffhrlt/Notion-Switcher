@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="../icons/icon16.svg">
-<title>Notion Switcher</title>
+<title>Baobab</title>
 <link rel="stylesheet" href="../styles/tokens.css">
 <link rel="stylesheet" href="../styles/components.css">
 <script src="../theme-init.js"></script>
@@ -19,25 +19,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Falling cubes background ── */
-.falling-cubes {
+/* ── Falling leaves background ── */
+.falling-leaves {
   position: fixed; inset: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
 }
-.falling-cube {
+.falling-leaf {
   position: absolute;
   width: 24px; height: 24px;
-  background: url('../icons/notion-cube.svg') center/contain no-repeat;
+  background: url('../icons/leaf.svg') center/contain no-repeat;
   opacity: 0.15;
-  animation: cube-fall linear infinite;
+  animation: leaf-fall linear infinite;
 }
-@keyframes cube-fall {
-  0%   { transform: translateY(-40px) rotate(0deg); }
-  100% { transform: translateY(calc(100vh + 40px)) rotate(720deg); }
+@keyframes leaf-fall {
+  0%   { transform: translate(0, -40px) rotate(0deg); }
+  25%  { transform: translate(24px, 25vh) rotate(90deg); }
+  50%  { transform: translate(-16px, 50vh) rotate(200deg); }
+  75%  { transform: translate(20px, 75vh) rotate(290deg); }
+  100% { transform: translate(0, calc(100vh + 40px)) rotate(360deg); }
 }
-[data-theme="dark"] .falling-cube { opacity: 0.10; filter: invert(1); }
+[data-theme="dark"] .falling-leaf { opacity: 0.12; }
 
 .page { max-width: 940px; margin: 0 auto; padding: 56px 32px 80px; position: relative; z-index: 1; }
 
@@ -418,11 +421,11 @@ body {
 </head>
 <body>
 
-<div class="falling-cubes" id="falling-cubes"></div>
+<div class="falling-leaves" id="falling-leaves"></div>
 <div class="page">
   <div class="header">
-    <img class="logo" src="../icons/icon48.png" alt="Notion Switcher">
-    <h1 class="title">Notion Switcher</h1>
+    <img class="logo" src="../icons/icon48.png" alt="Baobab">
+    <h1 class="title">Baobab</h1>
     <span class="ws-total" id="ws-total"></span>
   </div>
 

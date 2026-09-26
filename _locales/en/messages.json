@@ -1,15 +1,15 @@
 {
   "extName": {
-    "message": "Notion Switcher"
+    "message": "Baobab – Project Launcher"
   },
   "extDescription": {
-    "message": "Project launcher: open docs, web pages, apps and files per project in one keystroke"
+    "message": "One tree per project. Hang docs, web pages, apps and files on it as leaves and open them in one keystroke"
   },
   "commandPopup": {
-    "message": "Open launcher popup"
+    "message": "Open Baobab popup"
   },
   "commandDashboard": {
-    "message": "Open project dashboard"
+    "message": "Open the Baobab forest (dashboard)"
   },
   "dashboard": {
     "message": "Dashboard ↗"
@@ -21,7 +21,7 @@
     "message": "Search or press 1-9 to jump"
   },
   "addLink": {
-    "message": "Add Link"
+    "message": "Add leaf"
   },
   "moreOptions": {
     "message": "▸ More options"
@@ -30,13 +30,13 @@
     "message": "▾ Less"
   },
   "searchPlaceholderDash": {
-    "message": "Search items & projects... (1–9 to jump)"
+    "message": "Search leaves & trees... (1–9 to jump)"
   },
   "workspaceName": {
     "message": "Name (random if empty)"
   },
   "uncategorized": {
-    "message": "Uncategorized"
+    "message": "Seeds"
   },
   "filterAll": {
     "message": "All"
@@ -45,16 +45,16 @@
     "message": "Expiry"
   },
   "clearAll": {
-    "message": "Delete all items"
+    "message": "Clear the whole forest"
   },
   "clearAllConfirm": {
-    "message": "All items and projects will be\npermanently deleted."
+    "message": "All trees and leaves will be\npermanently deleted."
   },
   "clearAllYes": {
     "message": "Delete"
   },
   "newFolderName": {
-    "message": "New project name"
+    "message": "New tree name"
   },
   "add": {
     "message": "Add"
@@ -69,10 +69,10 @@
     "message": "Edit"
   },
   "addWorkspace": {
-    "message": "Add item"
+    "message": "Add leaf"
   },
   "editWorkspace": {
-    "message": "Edit item"
+    "message": "Edit leaf"
   },
   "kbdHint": {
     "message": "Press 1-9 to jump"
@@ -84,16 +84,16 @@
     }
   },
   "countWorkspaces": {
-    "message": "$COUNT$ items",
+    "message": "$COUNT$ leaves",
     "placeholders": {
       "count": { "content": "$1" }
     }
   },
   "newFolderOption": {
-    "message": "+ New project..."
+    "message": "+ Plant a new tree..."
   },
   "emptyNoWorkspaces": {
-    "message": "No items yet"
+    "message": "Your forest is empty"
   },
   "emptyNoResults": {
     "message": "No results found"
@@ -102,7 +102,7 @@
     "message": "Add one with the + button below"
   },
   "emptyAddHintDash": {
-    "message": "Use the + Add button to register web docs, app links, or local files."
+    "message": "Use the + Add button to hang web docs, app links, or local files as leaves."
   },
   "emptySearchHint": {
     "message": "Try a different keyword"
@@ -129,22 +129,22 @@
     "message": "Delete"
   },
   "folderAdd": {
-    "message": "Add project"
+    "message": "Plant tree"
   },
   "folderEdit": {
-    "message": "Edit project"
+    "message": "Edit tree"
   },
   "folderName": {
-    "message": "Project name"
+    "message": "Tree (project) name"
   },
   "folderBtn": {
-    "message": "📁 Project"
+    "message": "🌳 Tree"
   },
   "addBtn": {
     "message": "+ Add"
   },
   "dragToFolder": {
-    "message": "Drag items into this project"
+    "message": "Drag leaves onto this tree"
   },
   "auto": {
     "message": "Auto"
@@ -306,13 +306,13 @@
     "message": "Temp"
   },
   "hideUncategorized": {
-    "message": "Hide uncategorized"
+    "message": "Hide seeds"
   },
   "hideUncategorizedDisabled": {
-    "message": "Move all links to projects first"
+    "message": "Move all leaves onto trees first"
   },
   "showUncategorized": {
-    "message": "Show uncategorized"
+    "message": "Show seeds"
   },
   "obWelcomeTitle": {
     "message": "First time here? Let's go!"
@@ -324,10 +324,10 @@
     "message": "Let's start"
   },
   "obTip1": {
-    "message": "Add a doc, app or file link"
+    "message": "Add docs, apps and files as leaves"
   },
   "obTip2": {
-    "message": "Group them into projects"
+    "message": "Plant a tree for each project"
   },
   "obTip3": {
     "message": "Press 1~9 to jump instantly"

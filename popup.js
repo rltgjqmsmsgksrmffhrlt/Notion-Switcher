@@ -33,10 +33,10 @@ async function saveFolders(list) {
 
 function populateFolderSelect(selectedFolderId) {
   var select = document.getElementById('f-folder');
-  var html = '<option value="">📋 ' + esc(t('uncategorized')) + '</option>';
+  var html = '<option value="">🌱 ' + esc(t('uncategorized')) + '</option>';
   folders.forEach(function (f) {
     var sel = selectedFolderId === f.id ? ' selected' : '';
-    html += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '📁') + ' ' + esc(f.name) + '</option>';
+    html += '<option value="' + esc(f.id) + '"' + sel + '>' + (f.emoji || '🌳') + ' ' + esc(f.name) + '</option>';
   });
   html += '<option value="__new__">' + esc(t('newFolderOption')) + '</option>';
   select.innerHTML = html;
@@ -276,7 +276,7 @@ function renderList() {
         if (items.length === 0) return;
         var col = collapsedFolders[folder.id];
         html += '<div class="folder-section' + (col ? ' collapsed' : '') + '">';
-        html += '<div class="folder-label" data-folder-toggle="' + esc(folder.id) + '"><span class="fl-emoji">' + (folder.emoji || '📁') + '</span>' + esc(folder.name) + '<span class="fl-count">' + items.length + '</span><span class="fl-chevron">▾</span></div>';
+        html += '<div class="folder-label" data-folder-toggle="' + esc(folder.id) + '"><span class="fl-emoji">' + (folder.emoji || '🌳') + '</span>' + esc(folder.name) + '<span class="fl-count">' + items.length + '</span><span class="fl-chevron">▾</span></div>';
         html += '<div class="folder-items">';
         items.forEach(function (ws) {
           if (col) {
@@ -293,7 +293,7 @@ function renderList() {
       if (unfiled.length > 0 && !appSettings.hideUncategorized) {
         var uCol = collapsedFolders['__unfiled__'];
         html += '<div class="folder-section' + (uCol ? ' collapsed' : '') + '">';
-        html += '<div class="folder-label" data-folder-toggle="__unfiled__"><span class="fl-emoji">📋</span>' + esc(t('uncategorized')) + '<span class="fl-count">' + unfiled.length + '</span><span class="fl-chevron">▾</span></div>';
+        html += '<div class="folder-label" data-folder-toggle="__unfiled__"><span class="fl-emoji">🌱</span>' + esc(t('uncategorized')) + '<span class="fl-count">' + unfiled.length + '</span><span class="fl-chevron">▾</span></div>';
         html += '<div class="folder-items">';
         unfiled.forEach(function (ws) {
           if (uCol) {
@@ -501,7 +501,7 @@ function renderFilterBar() {
   var html = '<button class="filter-pill' + (!activeFilter ? ' active' : '') + '" data-filter="">' + esc(t('filterAll')) + '</button>';
   folders.forEach(function (f) {
     html += '<button class="filter-pill' + (activeFilter === f.id ? ' active' : '') + '" data-filter="' + esc(f.id) + '">' +
-      (f.emoji || '📁') + ' ' + esc(f.name) + '</button>';
+      (f.emoji || '🌳') + ' ' + esc(f.name) + '</button>';
   });
   if (hasTemp) {
     html += '<button class="filter-pill' + (activeFilter === '__expiry__' ? ' active' : '') + '" data-filter="__expiry__">⏳ ' + esc(t('expirySort')) + '</button>';
